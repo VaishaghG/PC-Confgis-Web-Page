@@ -56,6 +56,7 @@ align-items:center;
 column-gap:20px;
 padding:6px 0;
 min-height:92px;
+position:relative;
 }
 
 .glass-chip{
@@ -109,13 +110,17 @@ margin:0;
 display:flex;
 flex-direction:row;
 align-items:center;
+position:absolute;
+left:50%;
+top:50%;
+transform:translate(-50%, -50%);
 padding:16px 28px;
 border-radius:999px;
 }
 
 .nav-center-chip:hover,
 .nav-icons-chip:hover{
-transform:none;
+transform:translate(-50%, -50%);
 }
 
 .nav-link{
