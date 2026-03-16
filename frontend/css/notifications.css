@@ -1,0 +1,177 @@
+/* Custom Notification Styles */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10000;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    pointer-events: none;
+    width: 100%;
+    max-width: 400px;
+}
+
+.notification-toast {
+    pointer-events: auto;
+    background: rgba(25, 25, 35, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 280px;
+    justify-content: center;
+    
+    /* Animation */
+    animation: slideDownIn 0.5s cubic-bezier(0.18, 0.89, 0.32, 1.28) forwards;
+    transition: all 0.4s ease;
+}
+
+.notification-toast.hide {
+    animation: slideUpOut 0.5s cubic-bezier(0.6, -0.28, 0.735, 0.045) forwards;
+}
+
+.notification-toast i {
+    font-size: 1.5rem;
+    flex-shrink: 0;
+}
+
+.notification-content {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-grow: 1;
+}
+
+.notification-message {
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.notification-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.btn-toast-action {
+    background: #00ff88;
+    color: #000;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 4px 12px;
+    border-radius: 8px;
+    font-weight: 700;
+    transition: all 0.2s ease;
+}
+
+.btn-toast-action:hover {
+    background: #fff;
+    transform: scale(1.05);
+    color: #000;
+}
+
+.notification-toast.success i { color: #00ff88; }
+.notification-toast.error i { color: #ff4444; }
+.notification-toast.info i { color: #00d4ff; }
+.notification-toast.warning i { color: #ffbb00; }
+
+@keyframes slideDownIn {
+    from {
+        opacity: 0;
+        transform: translateY(-40px) scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideUpOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.9);
+    }
+}
+
+/* Confirmation Specifics */
+.notification-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    z-index: 9999;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+.notification-backdrop.fade-out {
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.notification-toast.confirmation {
+    max-width: 450px;
+    padding: 24px;
+    border: 1px solid rgba(255, 187, 0, 0.3);
+}
+
+.notification-confirm-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 12px;
+    justify-content: flex-end;
+}
+
+.btn-confirm-ok, .btn-confirm-cancel {
+    border: none;
+    padding: 8px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-confirm-ok {
+    background: #ffbb00;
+    color: #000;
+}
+
+.btn-confirm-ok:hover {
+    background: #fff;
+    transform: translateY(-2px);
+}
+
+.btn-confirm-cancel {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-confirm-cancel:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}

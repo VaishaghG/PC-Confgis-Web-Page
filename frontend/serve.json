@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/product", "destination": "/product.html" }
+  ],
+  "trailingSlash": false,
+  "cleanUrls": false
+}
