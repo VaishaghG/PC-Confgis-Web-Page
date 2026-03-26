@@ -22,7 +22,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cartBtn && !data.loggedIn) {
                 cartBtn.addEventListener('click', (e) => {
                     e.preventDefault();
-                    window.location.href = `login.html?redirect=cart.html&error=unauth`;
+                    window.location.href = `${FRONTEND_BASE_URL}/login.html?redirect=${FRONTEND_BASE_URL}/cart.html&error=unauth`;
                 });
             }
         })

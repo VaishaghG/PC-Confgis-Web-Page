@@ -114,16 +114,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.ok) {
                     // Clear any guest selections on login to start fresh
-                    localStorage.removeItem('selectedBuild');
-                    localStorage.removeItem('currentBuild');
-                    sessionStorage.removeItem('selectedBuild');
-                    sessionStorage.removeItem('currentBuild');
-
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
-                    } else {
-                        window.location.href = '/frontend/index.html';
-                    }
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = redirectUrl || (FRONTEND_BASE_URL + '/index.html');
                 } else {
                     showAlert(data.message || 'Login failed');
                     btn.innerHTML = `Login <i class="bi bi-arrow-right ms-2"></i>`;
@@ -225,16 +218,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (res.ok) {
                     // Clear any guest selections on signup
-                    localStorage.removeItem('selectedBuild');
-                    localStorage.removeItem('currentBuild');
-                    sessionStorage.removeItem('selectedBuild');
-                    sessionStorage.removeItem('currentBuild');
-
-                    if (redirectUrl) {
-                        window.location.href = redirectUrl;
-                    } else {
-                        window.location.href = '/frontend/index.html';
-                    }
+                    localStorage.clear();
+                    sessionStorage.clear();
+                    window.location.href = redirectUrl || (FRONTEND_BASE_URL + '/index.html');
                 } else {
                     showAlert(data.message || 'Signup failed');
                     btn.innerHTML = `Sign Up <i class="bi bi-person-plus ms-2"></i>`;

@@ -10,8 +10,20 @@ function createEmptyBuildState() {
 
 let selectedBuild = createEmptyBuildState();
 
+// Counts genuinely filled components — excludes empty strings, {}, null, undefined
+function getBuildCount(build) {
+    return [
+        build.cpu,
+        build.gpu,
+        build.ram,
+        build.storage,
+        build.cabinet && build.cabinet.name ? build.cabinet.name : null
+    ].filter(val => val && val !== '').length;
+}
+
 function getSelectedComponentCount() {
-    return COMPONENT_KEYS.filter(type => Boolean(selectedBuild[type])).length;
+    const { cpu, gpu, ram, storage, cabinet } = selectedBuild;
+    return [cpu, gpu, ram, storage, cabinet].filter(Boolean).length;
 }
 
 async function loadProducts(api, containerId) {
@@ -107,7 +119,7 @@ async function selectComponent(type, name, id, btn) {
         const authData = await authRes.json();
 
         if (!authData.loggedIn) {
-            window.location.href = `login.html?redirect=/frontend/index.html&error=unauth`;
+            window.location.href = `${FRONTEND_BASE_URL}/login.html?redirect=${encodeURIComponent(FRONTEND_BASE_URL + '/index.html')}&error=unauth`;
             return;
         }
 
@@ -137,7 +149,6 @@ async function selectComponent(type, name, id, btn) {
             selectedBuild[type] = name;
         }
 
-        localStorage.setItem('selectedBuild', JSON.stringify(selectedBuild));
         updateSaveButton();
 
         // 3. Persist to backend if logged in
@@ -171,35 +182,40 @@ function clearSelectionButtons() {
     });
 }
 
-// Load selections from localStorage and Database
+// Load selections exclusively from Database
 async function loadStoredSelections() {
-    const stored = localStorage.getItem('selectedBuild');
-    if (stored) {
-        try {
-            const parsed = JSON.parse(stored);
-            Object.assign(selectedBuild, parsed);
-        } catch (err) {
-            console.error('Error parsing stored build from localStorage:', err);
-        }
-    }
-
+    selectedBuild = createEmptyBuildState();
+    
     try {
         const authRes = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
         const authData = await authRes.json();
 
         if (authData.loggedIn) {
             const buildRes = await fetch(`${API_BASE_URL}/api/builds/current`, { credentials: 'include' });
-            const dbBuild = await buildRes.json();
-            const hasActiveComponents = COMPONENT_KEYS.some(key => Boolean(dbBuild[key]));
-
-            if (hasActiveComponents) {
-                COMPONENT_KEYS.forEach(key => {
-                    selectedBuild[key] = dbBuild[key] || null;
+            if (buildRes.ok) {
+                const dbBuild = await buildRes.json();
+                
+        COMPONENT_KEYS.forEach(key => {
+                    if (key === 'cabinet') {
+                        // Cabinet is an object — only count as selected if name is non-empty
+                        if (dbBuild.cabinet && typeof dbBuild.cabinet === 'object' && dbBuild.cabinet.name) {
+                            selectedBuild[key] = dbBuild.cabinet.name;
+                        } else if (typeof dbBuild.cabinet === 'string' && dbBuild.cabinet) {
+                            selectedBuild[key] = dbBuild.cabinet;
+                        } else {
+                            selectedBuild[key] = null;
+                        }
+                    } else {
+                        selectedBuild[key] = dbBuild[key] && dbBuild[key] !== '' ? dbBuild[key] : null;
+                    }
                 });
-            } else {
-                resetBuildSelection();
-                return;
             }
+        } else {
+            // Not authenticated: force clear all caches
+            localStorage.clear();
+            sessionStorage.clear();
+            resetBuildSelection(false);
+            return;
         }
     } catch (err) {
         console.error('Error syncing build from database:', err);
@@ -250,7 +266,7 @@ document.getElementById('btn-save-build')?.addEventListener('click', async () =>
         const authData = await authRes.json();
 
         if (!authData.loggedIn) {
-            window.location.href = `login.html?redirect=/frontend/index.html&error=unauth`;
+            window.location.href = `${FRONTEND_BASE_URL}/login.html?redirect=${encodeURIComponent(FRONTEND_BASE_URL + '/index.html')}&error=unauth`;
             return;
         }
 
@@ -296,13 +312,13 @@ document.getElementById('btn-save-build')?.addEventListener('click', async () =>
 
 
 // Full reset of the build selection state
-function resetBuildSelection() {
+function resetBuildSelection(doClear = true) {
     selectedBuild = createEmptyBuildState();
 
-    localStorage.removeItem('selectedBuild');
-    localStorage.removeItem('currentBuild');
-    sessionStorage.removeItem('selectedBuild');
-    sessionStorage.removeItem('currentBuild');
+    if (doClear) {
+        localStorage.clear();
+        sessionStorage.clear();
+    }
 
     clearSelectionButtons();
     updateSaveButton();

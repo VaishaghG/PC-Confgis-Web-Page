@@ -1,8 +1,53 @@
+let selectedAddress = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     loadCart();
+    loadAddresses();
 });
 
 // API_BASE_URL is globally defined in config.js
+
+// ── ADDRESS LOADING ──
+async function loadAddresses() {
+    const homeDisplay = document.getElementById('display-home-address');
+    const officeDisplay = document.getElementById('display-office-address');
+    const officeContainer = document.getElementById('office-option-container');
+    const checkoutBtn = document.getElementById('main-checkout-btn');
+
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/auth/profile`, { credentials: 'include' });
+        if (!res.ok) return;
+        const data = await res.json();
+
+        const home = data.addresses?.home;
+        const office = data.addresses?.office;
+
+        if (!home) {
+            homeDisplay.innerHTML = '<span class="text-danger">No home address set. <a href="dashboard.html">Update Profile</a></span>';
+            if (checkoutBtn) checkoutBtn.disabled = true;
+            return;
+        }
+
+        homeDisplay.textContent = home;
+
+        if (office && office.trim()) {
+            officeDisplay.textContent = office;
+            officeContainer.classList.remove('d-none');
+        }
+
+        // Listen for changes
+        document.querySelectorAll('input[name="deliveryAddress"]').forEach(radio => {
+            radio.addEventListener('change', (e) => {
+                selectedAddress = e.target.value;
+                // Enable checkout if it was disabled due to no selection
+                // (though subtotal check also controls it)
+            });
+        });
+
+    } catch (err) {
+        console.error("Error loading addresses:", err);
+    }
+}
 
 const TYPE_CONFIG = {
     cpu: { endpoint: 'cpus', nameField: 'cpuname', imgField: 'imgpath', fallbackName: 'CPU Processor' },
@@ -20,11 +65,12 @@ async function loadCart() {
         const res = await fetch(`${API_BASE_URL}/api/cart`, {credentials: 'include'});
         
         if (res.status === 401) {
-            window.location.href = `login.html?redirect=${encodeURIComponent(window.location.pathname)}&error=unauth`;
+            window.location.href = `${FRONTEND_BASE_URL}/login.html?redirect=${encodeURIComponent(window.location.href)}&error=unauth`;
             return;
         }
         
         const data = await res.json();
+        window.currentCartData = data;
         const individualItems = data.individualItems || [];
         const builds = data.builds || [];
         
@@ -56,9 +102,7 @@ async function loadCart() {
         }
 
         // 2. Fetch details for builds (we need prices for each component to get a total)
-        // For simplicity in this step, we'll just display the names saved in the build object
-        // and fetch prices to show a "Build Estimate".
-        const detailedBuilds = builds.map(build => {
+        const detailedBuilds = await Promise.all(builds.map(async build => {
             const components = build.components || {
                 cpu: build.cpu || '',
                 gpu: build.gpu || '',
@@ -66,14 +110,21 @@ async function loadCart() {
                 storage: build.storage || '',
                 cabinet: build.cabinet || ''
             };
+            console.log("BUILD CABINET DATA:", components.cabinet);
 
+            let cabinetImage = "images/default-case.png";
+            if (components.cabinet && components.cabinet.image) {
+                 cabinetImage = API_BASE_URL + "/" + components.cabinet.image;
+            }
+            
             return {
                 _id: build._id,
                 name: build.name || 'Custom PC Build',
                 components,
+                cabinetImage,
                 price: typeof build.price === 'number' ? build.price : 0
             };
-        });
+        }));
         
         renderCart(detailedIndividual, detailedBuilds);
 
@@ -108,7 +159,7 @@ function renderCart(individuals, builds) {
                         <h3 class="cart-item-title">${item.name}</h3>
                         <div class="cart-item-actions">
                             <span class="qty-value text-muted">Qty: ${item.quantity}</span>
-                            <button class="btn-checkout-item" onclick="showNotification('Proceeding to checkout for ${item.name.replace(/'/g, "\\'")}...', 'info')">
+                            <button class="btn-checkout-item" onclick="checkoutSingleItem('${encodeURIComponent(JSON.stringify(item))}')">
                                 <i class="bi bi-credit-card"></i> Proceed to Checkout
                             </button>
                             <button class="btn-remove" onclick="removeIndividual('${item._id}')">
@@ -144,31 +195,25 @@ function renderCart(individuals, builds) {
                 `;
             }).filter(Boolean).join('');
 
-            const cabinetImage = (build.components?.cabinet && typeof build.components.cabinet === 'object' && build.components.cabinet.image) 
-                ? build.components.cabinet.image 
-                : 'images/default-case.png';
-
             html += `
                 <div class="cart-build">
-                    <div class="build-top">
-                        <img src="${cabinetImage}" class="cabinet-img" alt="Cabinet">
-                        <div class="build-components">
-                            <div class="build-header">
-                                <h3 class="build-title">${build.name || 'Custom PC Build'}</h3>
-                                <div class="cart-item-price">$${buildPrice.toFixed(2)}</div>
-                            </div>
-                            <div class="build-specs-list">
-                                ${specsHtml || '<div class="text-muted small">Please complete the build before adding to cart.</div>'}
-                            </div>
+                    <img src="${build.cabinetImage || ''}" class="cabinet-img" alt="Cabinet">
+                    <div class="build-details">
+                        <div class="build-header">
+                            <h3 class="build-title">${build.name || 'Custom PC Build'}</h3>
+                            <div class="cart-item-price">$${buildPrice.toFixed(2)}</div>
                         </div>
-                    </div>
-                    <div class="build-group-actions p-3 pt-0">
-                        <button class="btn-checkout-build" onclick="showNotification('Proceeding to checkout for ${safeBuildName}...', 'info')">
-                            Proceed to Checkout Build
-                        </button>
-                        <button class="btn-remove-build" onclick="removeBuild('${build._id}')">
-                            Remove Build
-                        </button>
+                        <div class="build-specs-list">
+                            ${specsHtml || '<div class="text-muted small">Please complete the build before adding to cart.</div>'}
+                        </div>
+                        <div class="build-group-actions mt-3">
+                            <button class="btn-checkout-build" onclick="checkoutSingleBuild('${encodeURIComponent(JSON.stringify(build))}')">
+                                Proceed to Checkout Build
+                            </button>
+                            <button class="btn-remove-build" onclick="removeBuild('${build._id}')">
+                                Remove Build
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
@@ -176,12 +221,32 @@ function renderCart(individuals, builds) {
     }
     
     listEl.innerHTML = html;
-    updateSummary(subtotal);
+    updateSummary(subtotal, totalItems);
 }
 
-function updateSummary(subtotal) {
-    document.getElementById('summary-subtotal').textContent = `$${subtotal.toFixed(2)}`;
-    document.getElementById('summary-total').textContent = `$${subtotal.toFixed(2)}`;
+function updateSummary(subtotal, totalItems) {
+    const subtotalEl = document.getElementById('summary-subtotal');
+    const totalEl = document.getElementById('summary-total');
+    
+    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = `$${subtotal.toFixed(2)}`;
+
+    // Store in localStorage as fallback for payment page
+    localStorage.setItem('paymentTotal', subtotal.toFixed(2));
+    localStorage.setItem('paymentItemCount', totalItems || 0);
+
+    // Wire the main checkout button
+    const checkoutBtn = document.getElementById('main-checkout-btn');
+    if (checkoutBtn) {
+        if (subtotal > 0) {
+            checkoutBtn.disabled = false;
+            checkoutBtn.onclick = () => {
+                checkoutFullCart();
+            };
+        } else {
+            checkoutBtn.disabled = true;
+        }
+    }
 }
 
 async function removeIndividual(cartItemId) {
@@ -222,7 +287,7 @@ function renderEmptyCart() {
             <a href="index.html" class="btn-auth btn-primary d-inline-block px-4 w-auto">Start Building</a>
         </div>
     `;
-    updateSummary(0);
+    updateSummary(0, 0);
 }
 
 function renderLoading() {
@@ -233,3 +298,58 @@ function renderLoading() {
         </div>
     `;
 }
+
+// ── DISTINCT CHECKOUT FLOWS ──
+window.checkoutSingleItem = function(itemStr) {
+    if (!selectedAddress) {
+        showNotification("Please select a delivery address before checkout.", "warning");
+        return;
+    }
+    const item = JSON.parse(decodeURIComponent(itemStr));
+    localStorage.setItem("checkoutMode", "single-item");
+    localStorage.setItem("checkoutData", JSON.stringify({
+        items: [item],
+        builds: [],
+        totalAmount: item.price * (item.quantity || 1),
+        deliveryAddress: selectedAddress
+    }));
+    window.location.href = "payment.html";
+};
+
+window.checkoutSingleBuild = function(buildStr) {
+    if (!selectedAddress) {
+        showNotification("Please select a delivery address before checkout.", "warning");
+        return;
+    }
+    const build = JSON.parse(decodeURIComponent(buildStr));
+    localStorage.setItem("checkoutMode", "single-build");
+    localStorage.setItem("checkoutData", JSON.stringify({
+        items: [],
+        builds: [build],
+        totalAmount: typeof build.price === 'number' ? build.price : 0,
+        deliveryAddress: selectedAddress
+    }));
+    window.location.href = "payment.html";
+};
+
+window.checkoutFullCart = function() {
+    if (!selectedAddress) {
+        showNotification("Please select a delivery address before checkout.", "warning");
+        return;
+    }
+    if (!window.currentCartData) return;
+    const items = window.currentCartData.individualItems || [];
+    const builds = window.currentCartData.builds || [];
+    let total = 0;
+    items.forEach(i => total += (i.price * (i.quantity || 1)));
+    builds.forEach(b => total += (typeof b.price === 'number' ? b.price : 0));
+
+    localStorage.setItem("checkoutMode", "full-cart");
+    localStorage.setItem("checkoutData", JSON.stringify({
+        items: items,
+        builds: builds,
+        totalAmount: total,
+        deliveryAddress: selectedAddress
+    }));
+    window.location.href = "payment.html";
+};

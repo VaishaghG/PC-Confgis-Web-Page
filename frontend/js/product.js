@@ -165,30 +165,52 @@ function setupActionButtons(product) {
     const btnCart = document.getElementById('btn-cart');
     const btnAddToBuild = document.getElementById('btn-add-to-build');
     
-    // Check if product is already in build (local check for UI state)
-    let currentBuild = JSON.parse(localStorage.getItem('selectedBuild')) || {
-        cpu: null, gpu: null, ram: null, storage: null, cabinet: null
-    };
-
     const productName = document.getElementById('product-name').textContent;
-    const isSelected = currentBuild[product.type] === productName;
+
+    // Check backend to see if this product is already in the current draft build
+    (async () => {
+        try {
+            const authRes = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
+            const authData = await authRes.json();
+            if (!authData.loggedIn) return;
+
+            const buildRes = await fetch(`${API_BASE_URL}/api/builds/current`, { credentials: 'include' });
+            if (!buildRes.ok) return;
+            const dbBuild = await buildRes.json();
+
+            // Normalize cabinet to string name
+            const cabinetName = dbBuild.cabinet && typeof dbBuild.cabinet === 'object'
+                ? dbBuild.cabinet.name : dbBuild.cabinet;
+            const currentVal = product.type === 'cabinet' ? cabinetName : dbBuild[product.type];
+
+            if (currentVal === productName && btnAddToBuild) {
+                btnAddToBuild.innerHTML = `<i class="bi bi-dash-circle me-2"></i>Remove from Build`;
+                btnAddToBuild.classList.add('btn-danger');
+            }
+        } catch (err) {
+            console.error('Failed to check build state:', err);
+        }
+    })();
 
     if (btnAddToBuild) {
-        if (isSelected) {
-            btnAddToBuild.innerHTML = `<i class="bi bi-dash-circle me-2"></i>Remove from Build`;
-            btnAddToBuild.classList.add('btn-danger');
-        }
-
         btnAddToBuild.addEventListener('click', async () => {
             await handleAuthCheck(async () => {
-                const isRemoving = currentBuild[product.type] === productName;
+                // Fetch latest state from backend before modifying
+                let isRemoving = false;
+                try {
+                    const buildRes = await fetch(`${API_BASE_URL}/api/builds/current`, { credentials: 'include' });
+                    if (buildRes.ok) {
+                        const dbBuild = await buildRes.json();
+                        const cabinetName = dbBuild.cabinet && typeof dbBuild.cabinet === 'object'
+                            ? dbBuild.cabinet.name : dbBuild.cabinet;
+                        const currentVal = product.type === 'cabinet' ? cabinetName : dbBuild[product.type];
+                        isRemoving = currentVal === productName;
+                    }
+                } catch (e) {}
+
                 const newSelection = isRemoving ? null : productName;
 
-                // Sync locally
-                currentBuild[product.type] = newSelection;
-                localStorage.setItem('selectedBuild', JSON.stringify(currentBuild));
-
-                // Sync to backend
+                // Sync ONLY to backend — no localStorage
                 try {
                     await fetch(`${API_BASE_URL}/api/builds/update-current`, {
                         method: 'POST',
@@ -223,7 +245,7 @@ function setupActionButtons(product) {
                 actionFn();
             } else {
                 const currentPath = window.location.pathname + window.location.search;
-                window.location.href = `/frontend/login.html?redirect=${encodeURIComponent(currentPath)}&error=unauth`;
+                window.location.href = `${FRONTEND_BASE_URL}/login.html?redirect=${encodeURIComponent(currentPath)}&error=unauth`;
             }
         } catch (err) {
             console.error("Auth check failed", err);

@@ -75,13 +75,35 @@
                 </div>
                 
                 <div class="summary-divider"></div>
+
+                <div class="address-select-section mt-3">
+                    <h5 class="mb-3">Delivery Address</h5>
+                    <div id="address-options">
+                        <div class="form-check address-radio mb-2">
+                            <input class="form-check-input" type="radio" name="deliveryAddress" id="addr-home" value="home">
+                            <label class="form-check-label" for="addr-home">
+                                <strong>Home</strong><br>
+                                <small id="display-home-address" class="text-muted">Loading...</small>
+                            </label>
+                        </div>
+                        <div class="form-check address-radio d-none" id="office-option-container">
+                            <input class="form-check-input" type="radio" name="deliveryAddress" id="addr-office" value="office">
+                            <label class="form-check-label" for="addr-office">
+                                <strong>Office</strong><br>
+                                <small id="display-office-address" class="text-muted"></small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="summary-divider"></div>
                 
                 <div class="summary-row summary-total">
                     <span>Total</span>
                     <span id="summary-total">$0.00</span>
                 </div>
 
-                <button class="btn-primary w-100 py-3 mt-4 summary-checkout">
+                <button id="main-checkout-btn" class="btn-primary w-100 py-3 mt-4 summary-checkout" disabled>
                     Proceed to Checkout <i class="bi bi-shield-lock ms-2"></i>
                 </button>
                 <a href="index.html" class="btn-continue w-100 text-center d-block mt-3">

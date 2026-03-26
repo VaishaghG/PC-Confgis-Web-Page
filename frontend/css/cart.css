@@ -381,30 +381,32 @@
 }
 
 .cart-build {
+    display: flex;
+    gap: 20px;
+    align-items: center;
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.06);
     border-radius: 16px;
     margin-bottom: 20px;
+    padding: 20px;
     overflow: hidden;
 }
 
-.build-top {
-    display: flex;
-    gap: 20px;
-    padding: 20px;
-    align-items: center;
-}
-
-.cabinet-img {
-    width: 80px;
-    height: 80px;
+.cart-build .cabinet-img {
+    width: 160px;
+    height: 160px;
     object-fit: contain;
-    border-radius: 10px;
     background: #111;
-    padding: 8px;
+    border-radius: 12px;
+    padding: 10px;
     flex-shrink: 0;
+    transition: transform .2s ease;
 }
 
-.build-components {
+.cart-build .cabinet-img:hover {
+    transform: scale(1.05);
+}
+
+.build-details {
     flex: 1;
 }

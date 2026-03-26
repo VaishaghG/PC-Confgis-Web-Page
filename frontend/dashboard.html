@@ -116,8 +116,12 @@
             <span id="pf-dob">—</span>
           </div>
           <div class="profile-field full-width">
-            <label>Delivery Address</label>
-            <span id="pf-address">—</span>
+            <label>Home Address (Required)</label>
+            <span id="pf-home-address">Not set</span>
+          </div>
+          <div class="profile-field full-width">
+            <label>Office Address (Optional)</label>
+            <span id="pf-office-address">Not set</span>
           </div>
         </div>
       </div>
@@ -138,8 +142,12 @@
             <input type="date" id="edit-dob">
           </div>
           <div class="edit-field full-width">
-            <label for="edit-address">Delivery Address</label>
-            <textarea id="edit-address" placeholder="Enter your full delivery address"></textarea>
+            <label for="edit-home-address">Home Address (Required)</label>
+            <textarea id="edit-home-address" placeholder="Enter your home delivery address"></textarea>
+          </div>
+          <div class="edit-field full-width">
+            <label for="edit-office-address">Office Address (Optional)</label>
+            <textarea id="edit-office-address" placeholder="Enter your office delivery address"></textarea>
           </div>
         </div>
         <div class="edit-actions">
@@ -155,7 +163,11 @@
       <div class="section-header">
         <h2 class="section-title">My Orders</h2>
       </div>
-      <div class="empty-state">
+      <div id="orders-loading" class="builds-loading d-none">
+        <div class="spinner-border text-light" role="status"></div>
+      </div>
+      <div id="orders-list"></div>
+      <div id="orders-empty" class="empty-state d-none">
         <i class="bi bi-bag-x"></i>
         <p>No orders yet.</p>
         <a href="index.html" class="btn-go-shop">Start Shopping</a>
