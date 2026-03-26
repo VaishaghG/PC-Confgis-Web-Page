@@ -7,6 +7,8 @@ const router = express.Router();
 const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://127.0.0.1:5502'; // Default to 5502 or detect dynamically
 const DEFAULT_REDIRECT_PATH = '/frontend/index.html';
 const DEFAULT_LOGIN_PATH = '/frontend/login.html';
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const PHONE_REGEX = /^\d{10}$/;
 
 /**
  * Helper to get the correct frontend base URL.
@@ -58,7 +60,7 @@ router.get('/profile', async (req, res) => {
       email: user.email || '',
       phone: user.phone || user.phoneno || '',
       dob: user.dob || '',
-      address: user.address || ''
+      addresses: user.addresses || { home: '', office: '' }
     });
   } catch (e) {
     res.status(500).json({ message: 'Server error' });
@@ -71,22 +73,29 @@ router.post('/signup', async (req, res) => {
   if (!username || !email || !password) {
     return res.status(400).json({ message: 'All fields are required' });
   }
+  const normalizedEmail = String(email).trim().toLowerCase();
+  if (!EMAIL_REGEX.test(normalizedEmail)) {
+    return res.status(400).json({ message: 'Please provide a valid email address.' });
+  }
 
   try {
-    const existing = await User.findOne({ email });
+    const existing = await User.findOne({ email: normalizedEmail });
     if (existing) {
       return res.status(400).json({ message: 'Email already in use' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = new User({ username, email, password: hashedPassword });
+    const newUser = new User({ username: String(username).trim(), email: normalizedEmail, password: hashedPassword });
     await newUser.save();
 
     // Auto-login after signup
     req.login(newUser, (err) => {
       if (err) return res.status(500).json({ message: 'Error logging in after signup' });
       req.session.userId = newUser._id;
-      return res.json({ message: 'Signup successful', user: newUser });
+      req.session.save((err) => {
+        if (err) console.error("Session save error:", err);
+        return res.json({ message: 'Signup successful', user: newUser });
+      });
     });
   } catch (error) {
     console.error('Signup error:', error);
@@ -103,7 +112,10 @@ router.post('/login', (req, res, next) => {
     req.login(user, (err) => {
       if (err) return res.status(500).json({ message: 'Login error' });
       req.session.userId = user._id;
-      return res.json({ message: 'Login successful', user });
+      req.session.save((err) => {
+        if (err) console.error("Session save error:", err);
+        return res.json({ message: 'Login successful', user });
+      });
     });
   })(req, res, next);
 });
@@ -112,8 +124,10 @@ router.post('/login', (req, res, next) => {
 router.post('/logout', (req, res) => {
   req.logout(err => {
     if (err) return res.status(500).json({ message: 'Error logging out' });
-    req.session.destroy();
-    res.json({ message: 'Logged out successfully' });
+    req.session.destroy(() => {
+      res.clearCookie('connect.sid');
+      res.json({ message: 'Logged out successfully' });
+    });
   });
 });
 
@@ -123,7 +137,17 @@ router.post('/update-profile', async (req, res) => {
   if (!userId) return res.status(401).json({ message: 'Not authenticated' });
   try {
     const { username, phone, dob, address } = req.body;
-    await User.findByIdAndUpdate(userId, { username, phone, dob, address });
+    const normalizedPhone = String(phone || '').trim().replace(/[\s\-()]/g, '');
+    if (normalizedPhone && !PHONE_REGEX.test(normalizedPhone)) {
+      return res.status(400).json({ message: 'Invalid phone number format.' });
+    }
+
+    await User.findByIdAndUpdate(userId, {
+      username: String(username || '').trim(),
+      phone: normalizedPhone,
+      dob,
+      address: String(address || '').trim()
+    });
     res.json({ message: 'Profile updated' });
   } catch (e) {
     res.status(500).json({ message: 'Server error' });
@@ -145,6 +169,35 @@ router.post('/change-password', async (req, res) => {
     user.password = await bcrypt.hash(newPassword, 10);
     await user.save();
     res.json({ message: 'Password updated successfully.' });
+  } catch (e) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// â”€â”€ FORGOT PASSWORD RESET (email + new password) â”€â”€
+router.post('/forgot-password-reset', async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: 'Email and new password are required.' });
+    }
+    const normalizedEmail = String(email).trim().toLowerCase();
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      return res.status(400).json({ message: 'Please provide a valid email address.' });
+    }
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'Password must be at least 6 characters.' });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ message: 'No account found with this email.' });
+    }
+
+    user.password = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now log in.' });
   } catch (e) {
     res.status(500).json({ message: 'Server error' });
   }

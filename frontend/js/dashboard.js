@@ -40,6 +40,27 @@ function initials(name) {
   return name.trim().split(/\s+/).map(w => w[0].toUpperCase()).slice(0, 2).join('');
 }
 
+function normalizePhone(phone) {
+  return String(phone || '').replace(/\D/g, '');
+}
+
+function isValidPhone(phone) {
+  if (!phone) return true; // Optional field
+  return /^\d{10}$/.test(normalizePhone(phone));
+}
+
+function initPhoneInputRestriction() {
+  const phoneInput = document.getElementById('edit-phone');
+  if (!phoneInput) return;
+
+  const sanitize = () => {
+    phoneInput.value = phoneInput.value.replace(/\D/g, '').slice(0, 10);
+  };
+
+  phoneInput.addEventListener('input', sanitize);
+  phoneInput.addEventListener('paste', () => setTimeout(sanitize, 0));
+}
+
 /* ── Load profile ── */
 async function loadProfile() {
   try {
@@ -99,11 +120,19 @@ function initEditProfile() {
 
   formEl?.addEventListener('submit', async e => {
     e.preventDefault();
+    const rawPhone = document.getElementById('edit-phone').value;
+    if (!isValidPhone(rawPhone)) {
+      msgEl.className = 'edit-msg error';
+      msgEl.textContent = 'Enter a valid phone number (10-15 digits, optional +country code).';
+      msgEl.classList.remove('d-none');
+      return;
+    }
+
     const body = {
-      username: document.getElementById('edit-name').value,
-      phone: document.getElementById('edit-phone').value,
+      username: document.getElementById('edit-name').value.trim(),
+      phone: normalizePhone(rawPhone),
       dob: document.getElementById('edit-dob').value,
-      address: document.getElementById('edit-address').value,
+      address: document.getElementById('edit-address').value.trim(),
     };
 
     try {
@@ -166,12 +195,15 @@ async function loadBuilds() {
     }
 
     builds.forEach((build, i) => {
+      const cabinetName = typeof build.cabinet === 'object' ? build.cabinet.name : build.cabinet;
+      const cabinetImage = (typeof build.cabinet === 'object' && build.cabinet.image) ? build.cabinet.image : 'images/default-case.png';
+
       const specs = [
         { label: 'CPU', value: build.cpu },
         { label: 'GPU', value: build.gpu },
         { label: 'RAM', value: build.ram },
         { label: 'Storage', value: build.storage },
-        { label: 'Cabinet', value: build.cabinet },
+        { label: 'Cabinet', value: cabinetName },
       ].filter(s => s.value);
 
       const specsHTML = specs.map(s =>
@@ -181,10 +213,15 @@ async function loadBuilds() {
       const card = document.createElement('div');
       card.className = 'build-card';
       card.innerHTML = `
-        <div class="build-number">Build #${i + 1}${build.name ? ' — ' + build.name : ''}</div>
-        <ul class="build-specs">${specsHTML || '<li><span class="spec-value">No components saved.</span></li>'}</ul>
+        <div class="build-header">
+            <img src="${cabinetImage}" class="cabinet-img" alt="Cabinet Image">
+            <div class="build-info">
+                <div class="build-number">Build #${i + 1}${build.name ? ' — ' + build.name : ''}</div>
+                <ul class="build-specs">${specsHTML || '<li><span class="spec-value">No components saved.</span></li>'}</ul>
+            </div>
+        </div>
         <div class="build-actions">
-          <button class="btn-build-add-cart" data-id="${build._id}" data-cpu="${build.cpu}" data-gpu="${build.gpu}" data-ram="${build.ram}" data-storage="${build.storage}" data-cabinet="${build.cabinet}">
+          <button class="btn-build-add-cart" data-id="${build._id}" data-cpu="${build.cpu}" data-gpu="${build.gpu}" data-ram="${build.ram}" data-storage="${build.storage}" data-cabinet="${cabinetName}">
             <i class="bi bi-cart-plus me-1"></i>Add Build to Cart
           </button>
           <button class="btn-build-delete" data-id="${build._id}">
@@ -263,12 +300,51 @@ function initChangePassword() {
       msgEl.className = 'edit-msg ' + (res.ok ? 'success' : 'error');
       msgEl.textContent = res.ok ? 'Password updated!' : (data.message || 'Failed to update.');
       msgEl.classList.remove('d-none');
-      if (res.ok) form.reset();
+      if (res.ok) {
+        form.reset();
+        resetPasswordToggleState(form);
+      }
     } catch {
       msgEl.className = 'edit-msg error';
       msgEl.textContent = 'Network error. Try again.';
       msgEl.classList.remove('d-none');
     }
+  });
+}
+
+function initPasswordToggles(scope = document) {
+  scope.querySelectorAll('[data-password-toggle]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const wrapper = btn.closest('.input-wrapper, .password-input-group');
+      const input = wrapper?.querySelector('[data-password-input]');
+      if (!input) return;
+
+      const reveal = input.type === 'password';
+      input.type = reveal ? 'text' : 'password';
+
+      const icon = btn.querySelector('i');
+      if (icon) {
+        icon.classList.toggle('bi-eye', !reveal);
+        icon.classList.toggle('bi-eye-slash', reveal);
+      }
+      btn.setAttribute('aria-pressed', reveal ? 'true' : 'false');
+      btn.setAttribute('aria-label', reveal ? 'Hide password' : 'Show password');
+    });
+  });
+}
+
+function resetPasswordToggleState(scope = document) {
+  scope.querySelectorAll('[data-password-input]').forEach((input) => {
+    input.type = 'password';
+  });
+  scope.querySelectorAll('[data-password-toggle]').forEach((btn) => {
+    const icon = btn.querySelector('i');
+    if (icon) {
+      icon.classList.remove('bi-eye-slash');
+      icon.classList.add('bi-eye');
+    }
+    btn.setAttribute('aria-pressed', 'false');
+    btn.setAttribute('aria-label', 'Show password');
   });
 }
 
@@ -324,6 +400,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   initSidebar();
   initLogout();
   initEditProfile();
+  initPhoneInputRestriction();
+  initPasswordToggles();
   initChangePassword();
   loadProfile();
 

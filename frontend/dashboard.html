@@ -131,7 +131,7 @@
           </div>
           <div class="edit-field">
             <label for="edit-phone">Phone Number</label>
-            <input type="text" id="edit-phone" placeholder="+91 98765 43210">
+            <input type="text" id="edit-phone" placeholder="Enter 10-digit phone number" inputmode="numeric" maxlength="10" autocomplete="tel-national">
           </div>
           <div class="edit-field">
             <label for="edit-dob">Date of Birth</label>
@@ -212,15 +212,30 @@
       <form class="password-form glass-card" id="password-form">
         <div class="edit-field">
           <label for="pw-current">Current Password</label>
-          <input type="password" id="pw-current" placeholder="••••••••">
+          <div class="password-input-group">
+            <input type="password" id="pw-current" placeholder="••••••••" data-password-input>
+            <button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
         </div>
         <div class="edit-field">
           <label for="pw-new">New Password</label>
-          <input type="password" id="pw-new" placeholder="••••••••">
+          <div class="password-input-group">
+            <input type="password" id="pw-new" placeholder="••••••••" data-password-input>
+            <button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
         </div>
         <div class="edit-field">
           <label for="pw-confirm">Confirm New Password</label>
-          <input type="password" id="pw-confirm" placeholder="••••••••">
+          <div class="password-input-group">
+            <input type="password" id="pw-confirm" placeholder="••••••••" data-password-input>
+            <button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
         </div>
         <div id="pw-msg" class="edit-msg d-none"></div>
         <button type="submit" class="btn-save-profile mt-2">Update Password</button>

@@ -8,7 +8,11 @@ const pcBuildSchema = new mongoose.Schema(
     gpu: { type: String, default: '' },
     ram: { type: String, default: '' },
     storage: { type: String, default: '' },
-    cabinet: { type: String, default: '' },
+    cabinet: {
+      id: { type: String, default: '' },
+      name: { type: String, default: '' },
+      image: { type: String, default: '' }
+    },
     status: { type: String, enum: ['draft', 'saved'], default: 'draft' }
   },
   { timestamps: true }

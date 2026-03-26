@@ -46,21 +46,27 @@ router.get('/', requireAuth, async (req, res) => {
       const hydratedComponents = {};
       let calculatedPrice = 0;
 
-      // The frontend expects the name of the component as a string to display it.
-      // If we provide an object, it shows [object Object].
-      // We will look up the database for prices to ensure the total is correct.
       for (const [key, value] of Object.entries(components)) {
-        // value is the name string stored in build
-        if (typeof value === 'string' && value) {
-          const product = await Product.findOne({ name: value }).lean();
-          if (product) {
-            hydratedComponents[key] = product.name;
-            calculatedPrice += (product.price || 0);
-          } else {
+        let name = '';
+        if (key === 'cabinet' && typeof value === 'object' && value) {
+            name = value.name;
             hydratedComponents[key] = value;
-          }
+        } else if (typeof value === 'string') {
+            name = value;
+            hydratedComponents[key] = value;
         } else {
-          hydratedComponents[key] = value;
+            hydratedComponents[key] = value;
+        }
+
+        if (name) {
+          const product = await Product.findOne({ name }).lean();
+          if (product) {
+            // If it's a string, keep it a string. If it was an object, it's already set.
+            if (typeof hydratedComponents[key] === 'string') {
+                hydratedComponents[key] = product.name;
+            }
+            calculatedPrice += (product.price || 0);
+          }
         }
       }
 
@@ -124,12 +130,26 @@ router.post('/add-build', requireAuth, async (req, res) => {
     if (!build) return res.status(404).json({ error: "Build not found" });
 
     // Fetch product details for all components to get prices
-    const componentNames = [build.cpu, build.gpu, build.ram, build.storage, build.cabinet];
+    const components = {
+      cpu: build.cpu,
+      gpu: build.gpu,
+      ram: build.ram,
+      storage: build.storage,
+      cabinet: build.cabinet
+    };
+
     let buildPrice = 0;
-    for(const name of componentNames) {
-        if(name) {
-            const p = await Product.findOne({ name }).lean();
-            if(p) buildPrice += (p.price || 0);
+    for (const [key, value] of Object.entries(components)) {
+        let lookupName = '';
+        if (key === 'cabinet' && typeof value === 'object' && value) {
+            lookupName = value.name;
+        } else if (typeof value === 'string') {
+            lookupName = value;
+        }
+
+        if (lookupName) {
+            const p = await Product.findOne({ name: lookupName }).lean();
+            if (p) buildPrice += (p.price || 0);
         }
     }
 
@@ -140,18 +160,12 @@ router.post('/add-build', requireAuth, async (req, res) => {
       user.cart = { items: [], builds: [] };
     }
 
-    // Store names as strings. Hydration handles the rest.
+    // Store names and cabinet object.
     user.cart.builds.push({
       buildId: build._id,
       name: build.name || 'Custom PC Build',
       price: buildPrice,
-      components: {
-        cpu: build.cpu,
-        gpu: build.gpu,
-        ram: build.ram,
-        storage: build.storage,
-        cabinet: build.cabinet
-      }
+      components: components
     });
 
     user.markModified('cart');

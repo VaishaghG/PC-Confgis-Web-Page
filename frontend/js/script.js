@@ -311,7 +311,7 @@ function resetBuildSelection() {
 }
 
 let activeScrollAnimation = null;
-const sectionLinks = Array.from(document.querySelectorAll('.nav-link[href^="#"]'));
+const sectionLinks = Array.from(document.querySelectorAll('a[href^="#"], a[href^="index.html#"]'));
 
 function easeInOutCubic(progress) {
 return progress < 0.5
@@ -354,7 +354,9 @@ activeScrollAnimation = window.requestAnimationFrame(step);
 
 function setActiveNavLink(sectionId) {
 sectionLinks.forEach((link) => {
-const isActive = link.getAttribute("href") === "#" + sectionId;
+const href = link.getAttribute("href");
+const hash = href.includes("#") ? href.substring(href.indexOf("#")) : href;
+const isActive = hash === "#" + sectionId;
 link.classList.toggle("is-active", isActive);
 });
 }
@@ -364,7 +366,8 @@ const offset = getNavbarOffset() + 24;
 let currentSectionId = "";
 
 sectionLinks.forEach((link) => {
-const targetId = link.getAttribute("href");
+    const href = link.getAttribute("href");
+    const targetId = href.startsWith("index.html#") ? href.replace("index.html#", "#") : href;
 
 if (!targetId || targetId === "#") {
 return;
@@ -386,13 +389,28 @@ currentSectionId = section.id;
 setActiveNavLink(currentSectionId);
 }
 
-document.querySelectorAll('a[href^="#"]').forEach((link) => {
+document.querySelectorAll('a[href^="#"], a[href^="index.html#"]').forEach((link) => {
 link.addEventListener("click", (event) => {
-const targetId = link.getAttribute("href");
+const href = link.getAttribute("href");
 
-if (!targetId) {
+if (!href) {
 return;
 }
+
+// Extract the hash part
+const hash = href.includes("#") ? href.substring(href.indexOf("#")) : "";
+
+if (!hash) {
+return;
+}
+
+// If we are on index.html, we handle the smooth scroll
+// If we are on another page, let the default link behavior take over unless it's just a hash
+const isHomePage = window.location.pathname.endsWith("index.html") || window.location.pathname === "/";
+const isHashOnly = href.startsWith("#");
+
+if (isHomePage || isHashOnly) {
+const targetId = hash;
 
 if (targetId === "#") {
 event.preventDefault();
@@ -417,6 +435,8 @@ window.scrollY + targetSection.getBoundingClientRect().top - getNavbarOffset()
 setActiveNavLink(targetSection.id);
 animateScrollTo(targetY, 850);
 window.history.replaceState(null, "", targetId);
+link.blur();
+}
 });
 });
 

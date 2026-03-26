@@ -17,6 +17,7 @@ const authRoutes = require("./routes/authRoutes");
 const cartRoutes = require("./routes/cart");
 const buildsRoutes = require("./routes/builds");
 const productRoutes = require("./routes/productRoutes");
+const apiUserRoutes = require("./routes/apiUserRoutes");
 
 const app = express();
 
@@ -26,17 +27,27 @@ app.use(cors({
   optionsSuccessStatus: 200
 }));
 
+const path = require('path');
+
 app.use(express.json());
 
+// Serve images directly from backend
+app.use("/images", express.static(path.join(__dirname, "../frontend/images")));
+
+const crypto = require('crypto');
+// A fresh random secret on every restart ensures ALL existing session cookies
+// become invalid immediately — no user can stay logged in across restarts.
+const SESSION_SECRET = crypto.randomBytes(32).toString('hex');
+
 app.use(session({
-  secret: process.env.SESSION_SECRET || 'secret_pc_config_key',
+  secret: SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
-    secure: false, // Set to true if using https
+    secure: false,
     httpOnly: true,
-    sameSite: 'lax', // Required for OAuth redirects to retain the cookie
-    maxAge: 1000 * 60 * 60 * 24 * 7 // 1 week
+    sameSite: 'lax',
+    maxAge: 1000 * 60 * 60 * 24 // 24h
   }
 }));
 
@@ -54,15 +65,31 @@ app.use("/rams", ramRoutes);
 app.use("/storages", storageRoutes);
 app.use("/cabinets", cabinetRoutes);
 
-// User & Order Routes
+// User Routes
 app.use("/users", userRoutes);
-app.use("/orders", orderRoutes);
 
-// API Service Routes
+// Order API Routes
+app.use("/api/orders", orderRoutes);
+
+// API routes (must come before static/catch-all)
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/builds", buildsRoutes);
 app.use("/api/products", productRoutes);
+app.use("/api/user", apiUserRoutes);
+
+// Serve the frontend as static files from port 5000
+// e.g. http://localhost:5000/frontend/index.html
+app.use(express.static(path.join(__dirname, '..')));
+
+// Catch-all: for non-API, non-asset paths → serve index.html (SPA fallback)
+app.use((req, res) => {
+  if (!req.path.startsWith('/api') && !req.path.match(/\.[a-z]{2,4}$/i)) {
+    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  } else {
+    res.status(404).json({ message: 'Not found' });
+  }
+});
 
 app.listen(5000, () => {
   console.log("Server running on port 5000");

@@ -379,3 +379,32 @@
 .btn-checkout-item i {
     font-size: 0.9rem;
 }
+
+.cart-build {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.build-top {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    align-items: center;
+}
+
+.cabinet-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #111;
+    padding: 8px;
+    flex-shrink: 0;
+}
+
+.build-components {
+    flex: 1;
+}

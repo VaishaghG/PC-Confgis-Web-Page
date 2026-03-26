@@ -5,7 +5,10 @@ const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String }, // Optional for Google users
   googleId: { type: String },
-  address: String,
+  addresses: {
+    home: { type: String, default: "" },
+    office: { type: String, default: "" }
+  },
   phoneno: String,
   phone: String,
   dob: String,
@@ -28,7 +31,11 @@ const userSchema = new mongoose.Schema({
       gpu: String,
       ram: String,
       storage: String,
-      cabinet: String
+      cabinet: {
+        id: { type: String, default: '' },
+        name: { type: String, default: '' },
+        image: { type: String, default: '' }
+      }
     }
   }
 });

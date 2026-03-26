@@ -52,7 +52,7 @@
     align-items: center;
 }
 
-.input-wrapper i {
+.input-wrapper > i {
     position: absolute;
     left: 14px;
     color: var(--text-muted);
@@ -67,6 +67,38 @@
     padding: 12px 14px 12px 42px;
     border-radius: 12px;
     transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.input-wrapper .form-control[data-password-input] {
+    padding-right: 46px;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    width: 28px;
+    height: 28px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: color 0.2s, background 0.2s;
+}
+
+.password-toggle:hover {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid rgba(167,139,250,0.5);
+    outline-offset: 1px;
 }
 
 .input-wrapper .form-control:focus {
@@ -149,6 +181,30 @@
     margin-top: 2rem;
     font-size: 0.9rem;
     color: var(--text-dim);
+}
+
+.auth-inline-action {
+    margin-top: -2px;
+    margin-bottom: 10px;
+    text-align: right;
+}
+
+.btn-link-inline {
+    background: transparent;
+    border: none;
+    color: var(--accent-strong);
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+}
+
+.btn-link-inline:hover {
+    color: #fff;
+}
+
+#forgot-password-form {
+    margin-top: 8px;
 }
 
 .auth-footer a {

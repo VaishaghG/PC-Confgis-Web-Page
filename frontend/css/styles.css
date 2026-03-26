@@ -169,10 +169,10 @@ color:var(--text-main);
 color:var(--accent-strong);
 }
 
-.nav-link:focus,
-.nav-link:active,
 .nav-link:focus-visible{
-color:var(--accent-strong);
+outline: 2px solid var(--accent);
+outline-offset: 8px;
+border-radius: 4px;
 }
 
 .nav-link::after{

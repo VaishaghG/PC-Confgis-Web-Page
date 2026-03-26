@@ -133,25 +133,36 @@ function renderCart(individuals, builds) {
 
             const specsHtml = order.map(key => {
                 const value = build.components?.[key];
-                if (!value) return '';
+                let displayValue = (key === 'cabinet' && typeof value === 'object' && value) ? value.name : value;
+                
+                if (!displayValue) return '';
                 return `
                     <div class="build-spec-item">
                         <span class="build-spec-label">${key.toUpperCase()}</span>
-                        <span class="build-spec-name" title="${value}">${value}</span>
+                        <span class="build-spec-name" title="${displayValue}">${displayValue}</span>
                     </div>
                 `;
             }).filter(Boolean).join('');
 
+            const cabinetImage = (build.components?.cabinet && typeof build.components.cabinet === 'object' && build.components.cabinet.image) 
+                ? build.components.cabinet.image 
+                : 'images/default-case.png';
+
             html += `
-                <div class="build-group">
-                    <div class="build-header">
-                        <h3 class="build-title">${build.name || 'Custom PC Build'}</h3>
-                        <div class="cart-item-price">$${buildPrice.toFixed(2)}</div>
+                <div class="cart-build">
+                    <div class="build-top">
+                        <img src="${cabinetImage}" class="cabinet-img" alt="Cabinet">
+                        <div class="build-components">
+                            <div class="build-header">
+                                <h3 class="build-title">${build.name || 'Custom PC Build'}</h3>
+                                <div class="cart-item-price">$${buildPrice.toFixed(2)}</div>
+                            </div>
+                            <div class="build-specs-list">
+                                ${specsHtml || '<div class="text-muted small">Please complete the build before adding to cart.</div>'}
+                            </div>
+                        </div>
                     </div>
-                    <div class="build-specs-list">
-                        ${specsHtml || '<div class="text-muted small">Please complete the build before adding to cart.</div>'}
-                    </div>
-                    <div class="build-group-actions">
+                    <div class="build-group-actions p-3 pt-0">
                         <button class="btn-checkout-build" onclick="showNotification('Proceeding to checkout for ${safeBuildName}...', 'info')">
                             Proceed to Checkout Build
                         </button>

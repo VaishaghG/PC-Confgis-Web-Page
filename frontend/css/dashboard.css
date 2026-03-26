@@ -479,6 +479,38 @@
   max-width: 480px;
 }
 
+.password-input-group {
+  position: relative;
+}
+
+.password-input-group input[data-password-input] {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-input-group .password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: rgba(255,255,255,0.6);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.password-input-group .password-toggle:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+
 /* ── EMPTY STATE ── */
 .empty-state {
   display: flex;
@@ -542,4 +574,20 @@
   .builds-grid {
     grid-template-columns: 1fr;
   }
+}
+
+.build-header {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.cabinet-img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+    border-radius: 10px;
+    background: #111;
+    padding: 8px;
 }

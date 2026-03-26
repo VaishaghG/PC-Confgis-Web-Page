@@ -1,5 +1,6 @@
 const express = require('express');
 const PCBuild = require('../models/PCBuild');
+const Cabinet = require('../models/cabinetModel');
 const router = express.Router();
 
 // ── Auth guard middleware ──
@@ -10,54 +11,99 @@ function requireAuth(req, res, next) {
   next();
 }
 
-// ── POST /api/builds/save ──
+//
+// ───────────── SAVE BUILD ─────────────
+//
 router.post('/save', requireAuth, async (req, res) => {
   try {
     const { name, cpu, gpu, ram, storage, cabinet } = req.body;
-    
-    // Find the existing draft for this user
-    let build = await PCBuild.findOne({ userId: req.userId, status: 'draft' });
-    
-    if (build) {
-        // Promote draft to saved
-        build.name = name || 'My PC Build';
-        build.cpu = cpu || build.cpu;
-        build.gpu = gpu || build.gpu;
-        build.ram = ram || build.ram;
-        build.storage = storage || build.storage;
-        build.cabinet = cabinet || build.cabinet;
-        build.status = 'saved';
-        await build.save();
-    } else {
-        // Fallback: Create new saved build if no draft found (shouldn't happen with proper frontend sync)
-        build = new PCBuild({
-            userId: req.userId,
-            name: name || 'My PC Build',
-            cpu: cpu || '',
-            gpu: gpu || '',
-            ram: ram || '',
-            storage: storage || '',
-            cabinet: cabinet || '',
-            status: 'saved'
-        });
-        await build.save();
+
+    // ✅ STRICT CABINET FETCH (CASE-INSENSITIVE)
+    let cabinetData = null;
+
+    if (cabinet) {
+      const prod = await Cabinet.findOne({
+        Brand: { $regex: `^${cabinet}$`, $options: 'i' }
+      }).lean();
+
+      if (!prod) {
+        console.error("❌ Cabinet NOT FOUND:", cabinet);
+        return res.status(400).json({ message: `Cabinet not found: ${cabinet}` });
+      }
+
+      cabinetData = {
+        id: prod._id.toString(),
+        name: prod.Brand,
+        image: prod.imgpath // 🔥 CRITICAL FIX
+      };
     }
-    
-    // Legacy cleanup: Clear activeBuild on User if it still exists
+
+    // Find draft
+    let build = await PCBuild.findOne({
+      userId: req.userId,
+      status: 'draft'
+    });
+
+    if (build) {
+      // ✅ Update draft → saved
+      build.name = name || 'My PC Build';
+      build.cpu = cpu || build.cpu;
+      build.gpu = gpu || build.gpu;
+      build.ram = ram || build.ram;
+      build.storage = storage || build.storage;
+
+      if (cabinetData) {
+        build.cabinet = cabinetData;
+      }
+
+      build.status = 'saved';
+      await build.save();
+
+    } else {
+      // ✅ Create new build
+      build = new PCBuild({
+        userId: req.userId,
+        name: name || 'My PC Build',
+        cpu: cpu || '',
+        gpu: gpu || '',
+        ram: ram || '',
+        storage: storage || '',
+        cabinet: cabinetData || {
+          id: '',
+          name: '',
+          image: ''
+        },
+        status: 'saved'
+      });
+
+      await build.save();
+    }
+
+    // Cleanup user cart
     const User = require('../models/User');
-    await User.findByIdAndUpdate(req.userId, { $unset: { 'cart.activeBuild': "" } });
+    await User.findByIdAndUpdate(req.userId, {
+      $unset: { 'cart.activeBuild': "" }
+    });
 
     res.json({ message: 'Build saved', build });
+
   } catch (err) {
     console.error('Save build error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// ── GET /api/builds/my ──
+
+//
+// ───────────── GET BUILDS ─────────────
+//
 router.get('/my', requireAuth, async (req, res) => {
   try {
-    const builds = await PCBuild.find({ userId: req.userId, status: 'saved' }).sort({ createdAt: -1 });
+    const builds = await PCBuild.find({
+      userId: req.userId,
+      status: 'saved'
+    }).sort({ createdAt: -1 });
+
     res.json(builds);
   } catch (err) {
     console.error('Fetch builds error:', err);
@@ -65,46 +111,103 @@ router.get('/my', requireAuth, async (req, res) => {
   }
 });
 
-// ── DELETE /api/builds/:id ──
+
+//
+// ───────────── DELETE BUILD ─────────────
+//
 router.delete('/:id', requireAuth, async (req, res) => {
   try {
-    const build = await PCBuild.findOneAndDelete({ _id: req.params.id, userId: req.userId });
-    if (!build) return res.status(404).json({ message: 'Build not found' });
+    const build = await PCBuild.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.userId
+    });
+
+    if (!build) {
+      return res.status(404).json({ message: 'Build not found' });
+    }
+
     res.json({ message: 'Build deleted' });
+
   } catch (err) {
     console.error('Delete build error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
+
+//
+// ───────────── GET CURRENT (DRAFT) ─────────────
+//
 router.get('/current', requireAuth, async (req, res) => {
   try {
-    const build = await PCBuild.findOne({ userId: req.userId, status: 'draft' });
-    res.json(build || {});
+    const build = await PCBuild.findOne({
+      userId: req.userId,
+      status: 'draft'
+    });
+
+    // Return clean empty structure so frontend count logic never sees null/undefined
+    res.json(build || {
+      cpu: '', gpu: '', ram: '', storage: '',
+      cabinet: { id: '', name: '', image: '' }
+    });
   } catch (err) {
     console.error('Fetch current build error:', err);
     res.status(500).json({ message: 'Server error' });
   }
 });
 
-// ── POST /api/builds/update-current ──
+
+//
+// ───────────── UPDATE CURRENT BUILD ─────────────
+//
 router.post('/update-current', requireAuth, async (req, res) => {
   try {
     const { type, name } = req.body;
-    
-    let draft = await PCBuild.findOne({ userId: req.userId, status: 'draft' });
-    
+
+    let draft = await PCBuild.findOne({
+      userId: req.userId,
+      status: 'draft'
+    });
+
     if (!draft) {
-        draft = new PCBuild({
-            userId: req.userId,
-            status: 'draft'
-        });
+      draft = new PCBuild({
+        userId: req.userId,
+        status: 'draft'
+      });
     }
-    
-    draft[type] = name;
+
+    if (type === 'cabinet') {
+      // ── DESELECT: clear cabinet field ──────────────────────────────────────
+      if (!name || name === 'null') {
+        draft.cabinet = { id: '', name: '', image: '' };
+
+      // ── SELECT: look up real cabinet by Brand ──────────────────────────────
+      } else {
+        const prod = await Cabinet.findOne({
+          Brand: { $regex: `^${name}$`, $options: 'i' }
+        }).lean();
+
+        if (!prod) {
+          console.error("❌ Cabinet NOT FOUND:", name);
+          return res.status(400).json({ message: `Cabinet not found: ${name}` });
+        }
+
+        draft.cabinet = {
+          id: prod._id.toString(),
+          name: prod.Brand,
+          image: prod.imgpath
+        };
+      }
+
+    } else {
+      // For all other types: null/empty means deselect
+      draft[type] = (name && name !== 'null') ? name : '';
+    }
+
     await draft.save();
-    
+
     res.json({ success: true, draft });
+
   } catch (err) {
     console.error('Update current build error:', err);
     res.status(500).json({ message: 'Server error' });

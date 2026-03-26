@@ -50,7 +50,10 @@
                 <label>Password</label>
                 <div class="input-wrapper">
                     <i class="bi bi-lock"></i>
-                    <input type="password" id="password" class="form-control" placeholder="Create password" required minlength="6">
+                    <input type="password" id="password" class="form-control" placeholder="Create password" required minlength="6" data-password-input>
+                    <button type="button" class="password-toggle" data-password-toggle aria-label="Show password" aria-pressed="false">
+                        <i class="bi bi-eye"></i>
+                    </button>
                 </div>
             </div>
             
