@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - PC Configurator</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="css/admin.css">
+    <link rel="stylesheet" href="../css/notifications.css">
+</head>
+<body>
+    <div class="admin-shell">
+        <header class="admin-topbar">
+            <div class="brand-block">
+                <a class="brand-link" href="/frontend/index.html">
+                    <img src="../images/logo.png" alt="PC Configurator logo">
+                    <div>
+                        <p class="eyebrow">Control Center</p>
+                        <h1>Admin Dashboard</h1>
+                    </div>
+                </a>
+            </div>
+
+            <nav class="primary-nav" aria-label="Admin sections">
+                <button type="button" class="primary-nav-link active" data-view="products" onclick="switchView('products')">
+                    <i class="bi bi-grid-1x2"></i>
+                    <span>Products</span>
+                </button>
+                <button type="button" class="primary-nav-link" data-view="analytics" onclick="switchView('analytics')">
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Analytics</span>
+                </button>
+            </nav>
+
+            <div class="topbar-actions">
+                <a href="/frontend/index.html" class="exit-link">
+                    <i class="bi bi-box-arrow-up-right"></i>
+                    <span>Open Store</span>
+                </a>
+            </div>
+        </header>
+
+        <main class="admin-main">
+            <section id="products-view" class="view-panel fade-in">
+                <div class="section-header">
+                    <div>
+                        <p class="section-kicker">Catalog Management</p>
+                        <h2 class="section-title">Manage Components</h2>
+                        <p class="section-copy">Add, refine, and organize every part in the storefront from one consistent workspace.</p>
+                    </div>
+                </div>
+
+                <div class="card section-card">
+                    <div class="component-nav" aria-label="Product categories">
+                        <button type="button" class="component-nav-item active" data-category="cpu" onclick="setCategory('cpu')">CPU</button>
+                        <button type="button" class="component-nav-item" data-category="gpu" onclick="setCategory('gpu')">GPU</button>
+                        <button type="button" class="component-nav-item" data-category="ram" onclick="setCategory('ram')">RAM</button>
+                        <button type="button" class="component-nav-item" data-category="storage" onclick="setCategory('storage')">Storage</button>
+                        <button type="button" class="component-nav-item" data-category="cabinet" onclick="setCategory('cabinet')">Cabinet</button>
+                    </div>
+
+                    <div class="admin-grid">
+                        <section class="card form-section">
+                            <div class="card-header">
+                                <div>
+                                    <p class="panel-kicker">Editor</p>
+                                    <h3>Product Details</h3>
+                                </div>
+                                <span class="panel-badge" id="categoryBadge">CPU</span>
+                            </div>
+
+                            <div class="form-grid" id="dynamic-form"></div>
+
+                            <div class="form-grid media-grid">
+                                <div class="form-group full-width">
+                                    <label for="imageUpload">Product Image</label>
+                                    <div class="image-box" id="imagePreview">
+                                        <span class="image-placeholder">
+                                            <i class="bi bi-image"></i>
+                                            <span>No image selected</span>
+                                        </span>
+                                    </div>
+                                    <div class="custom-file-upload">
+                                        <input type="file" id="imageUpload" class="file-input-hidden" accept="image/*" onchange="previewImage(this)">
+                                        <button type="button" class="file-trigger-btn" onclick="openImagePicker()">
+                                            <i class="bi bi-upload"></i>
+                                            <span>Choose Image</span>
+                                        </button>
+                                        <span class="file-name" id="imageFileName">No file chosen</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="button-row">
+                                <button class="btn-admin btn-primary" onclick="addProduct()">
+                                    <i class="bi bi-plus-lg"></i>
+                                    <span>Add New</span>
+                                </button>
+                                <button class="btn-admin btn-outline" onclick="updateProduct()">
+                                    <i class="bi bi-check2-circle"></i>
+                                    <span>Save Changes</span>
+                                </button>
+                                <button class="btn-admin btn-danger" onclick="deleteProduct()">
+                                    <i class="bi bi-trash3"></i>
+                                    <span>Delete</span>
+                                </button>
+                            </div>
+                        </section>
+
+                        <aside class="card list-section">
+                            <div class="card-header">
+                                <div>
+                                    <p class="panel-kicker">Inventory</p>
+                                    <h3>Product List</h3>
+                                </div>
+                                <button class="btn-admin btn-ghost" onclick="clearForm()">
+                                    <i class="bi bi-eraser"></i>
+                                    <span>Clear Form</span>
+                                </button>
+                            </div>
+
+                            <div class="product-list" id="productList" aria-live="polite"></div>
+                            <p class="panel-copy">Select an item to edit its details. The list updates instantly when you switch categories.</p>
+                        </aside>
+                    </div>
+                </div>
+            </section>
+
+            <section id="analytics-view" class="view-panel fade-in d-none">
+                <div class="section-header section-header-spread">
+                    <div>
+                        <p class="section-kicker">Business Signals</p>
+                        <h2 class="section-title">Analytics Overview</h2>
+                        <p class="section-copy">Track performance, orders, and customer growth from a single operational dashboard.</p>
+                    </div>
+                    <button class="btn-admin btn-outline" onclick="loadAnalytics()">
+                        <i class="bi bi-arrow-clockwise"></i>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <div class="stats-grid" id="statsGrid">
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="bi bi-people"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Users</h3>
+                            <div class="stat-value" id="stat-users">...</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon"><i class="bi bi-cart-check"></i></div>
+                        <div class="stat-info">
+                            <h3>Total Orders</h3>
+                            <div class="stat-value" id="stat-orders">...</div>
+                        </div>
+                    </div>
+                    <div class="card stat-card">
+                        <div class="stat-icon stat-icon-success"><i class="bi bi-currency-dollar"></i></div>
+                        <div class="stat-info">
+                            <h3>Revenue</h3>
+                            <div class="stat-value" id="stat-revenue">...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="analytics-layout">
+                    <div class="card analytics-card">
+                        <div class="card-header">
+                            <div>
+                                <p class="panel-kicker">Snapshot</p>
+                                <h3>Growth Overview</h3>
+                            </div>
+                        </div>
+                        <div class="insight-grid">
+                            <div class="insight-card">
+                                <span class="insight-label">Average Order Value</span>
+                                <strong class="insight-value" id="stat-aov">$0</strong>
+                            </div>
+                            <div class="insight-card">
+                                <span class="insight-label">Revenue Per User</span>
+                                <strong class="insight-value" id="stat-rpu">$0</strong>
+                            </div>
+                            <div class="insight-card">
+                                <span class="insight-label">Top Category</span>
+                                <strong class="insight-value" id="stat-top-category">-</strong>
+                            </div>
+                        </div>
+
+                        <div class="chart-panel">
+                            <div class="chart-header">
+                                <div>
+                                    <p class="panel-kicker">Performance Mix</p>
+                                    <h3>Revenue vs Orders</h3>
+                                </div>
+                            </div>
+
+                            <div class="bar-chart">
+                                <div class="bar-row">
+                                    <div class="bar-copy">
+                                        <span class="bar-title">Revenue</span>
+                                        <span class="bar-value" id="bar-revenue-value">$0</span>
+                                    </div>
+                                    <div class="bar-track">
+                                        <div class="bar-fill revenue-fill" id="bar-revenue"></div>
+                                    </div>
+                                </div>
+
+                                <div class="bar-row">
+                                    <div class="bar-copy">
+                                        <span class="bar-title">Orders</span>
+                                        <span class="bar-value" id="bar-orders-value">0</span>
+                                    </div>
+                                    <div class="bar-track">
+                                        <div class="bar-fill orders-fill" id="bar-orders"></div>
+                                    </div>
+                                </div>
+
+                                <div class="bar-row">
+                                    <div class="bar-copy">
+                                        <span class="bar-title">Users</span>
+                                        <span class="bar-value" id="bar-users-value">0</span>
+                                    </div>
+                                    <div class="bar-track">
+                                        <div class="bar-fill users-fill" id="bar-users"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="analytics-side">
+                        <div class="card analytics-list-card">
+                            <div class="card-header">
+                                <div>
+                                    <p class="panel-kicker">Products</p>
+                                    <h3>Popular Items</h3>
+                                </div>
+                            </div>
+                            <div class="analytics-list" id="popularItemsList">
+                                <div class="analytics-empty">No item data yet.</div>
+                            </div>
+                        </div>
+
+                        <div class="card analytics-list-card">
+                            <div class="card-header">
+                                <div>
+                                    <p class="panel-kicker">Builds</p>
+                                    <h3>Popular Builds</h3>
+                                </div>
+                            </div>
+                            <div class="analytics-list" id="popularBuildsList">
+                                <div class="analytics-empty">No build data yet.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="../../frontend/js/config.js"></script>
+    <script src="../../frontend/js/notifications.js"></script>
+    <script src="js/dashboard.js"></script>
+    <script src="js/analytics.js"></script>
+</body>
+</html>

@@ -4,7 +4,8 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const session = require("express-session");
 const passport = require("passport");
-require("./passport-config")(passport); // Initialize passport strategies
+const path = require("path");
+require("./passport-config")(passport);
 
 const cpuRoutes = require("./routes/cpuRoutes");
 const gpuRoutes = require("./routes/gpuRoutes");
@@ -20,24 +21,17 @@ const productRoutes = require("./routes/productRoutes");
 const apiUserRoutes = require("./routes/apiUserRoutes");
 
 const app = express();
+const SESSION_SECRET = process.env.SESSION_SECRET || "pcconfig-dev-session-secret";
 
 app.use(cors({
-  origin: true, // Dynamically allow the request origin
+  origin: true,
   credentials: true,
   optionsSuccessStatus: 200
 }));
 
-const path = require('path');
-
 app.use(express.json());
 
-// Serve images directly from backend
 app.use("/images", express.static(path.join(__dirname, "../frontend/images")));
-
-const crypto = require('crypto');
-// A fresh random secret on every restart ensures ALL existing session cookies
-// become invalid immediately — no user can stay logged in across restarts.
-const SESSION_SECRET = crypto.randomBytes(32).toString('hex');
 
 app.use(session({
   secret: SESSION_SECRET,
@@ -46,8 +40,8 @@ app.use(session({
   cookie: {
     secure: false,
     httpOnly: true,
-    sameSite: 'lax',
-    maxAge: 1000 * 60 * 60 * 24 // 24h
+    sameSite: "lax",
+    maxAge: 1000 * 60 * 60 * 24
   }
 }));
 
@@ -55,39 +49,50 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 mongoose.connect(process.env.MONGO_URI)
-.then(() => console.log("MongoDB Connected"))
-.catch(err => console.log(err));
+  .then(async () => {
+    console.log("MongoDB Connected");
 
-// Product Category Routes
+    const User = require("./models/User");
+    const bcrypt = require("bcryptjs");
+    const adminEmail = "admin@pcconfig.com";
+    const adminExists = await User.findOne({ email: adminEmail });
+
+    if (!adminExists) {
+      const hashedPassword = await bcrypt.hash("admin123", 10);
+      await User.create({
+        username: "Admin",
+        email: adminEmail,
+        password: hashedPassword,
+        role: "admin"
+      });
+      console.log("Default admin created: admin@pcconfig.com / admin123");
+    }
+  })
+  .catch((err) => console.log(err));
+
 app.use("/cpus", cpuRoutes);
 app.use("/gpus", gpuRoutes);
 app.use("/rams", ramRoutes);
 app.use("/storages", storageRoutes);
 app.use("/cabinets", cabinetRoutes);
 
-// User Routes
 app.use("/users", userRoutes);
 
-// Order API Routes
 app.use("/api/orders", orderRoutes);
-
-// API routes (must come before static/catch-all)
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/builds", buildsRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/user", apiUserRoutes);
+app.use("/api/admin", require("./routes/adminRoutes"));
 
-// Serve the frontend as static files from port 5000
-// e.g. http://localhost:5000/frontend/index.html
-app.use(express.static(path.join(__dirname, '..')));
+app.use(express.static(path.join(__dirname, "..")));
 
-// Catch-all: for non-API, non-asset paths → serve index.html (SPA fallback)
 app.use((req, res) => {
-  if (!req.path.startsWith('/api') && !req.path.match(/\.[a-z]{2,4}$/i)) {
-    res.sendFile(path.join(__dirname, '../frontend/index.html'));
+  if (!req.path.startsWith("/api") && !req.path.match(/\.[a-z]{2,4}$/i)) {
+    res.sendFile(path.join(__dirname, "../frontend/index.html"));
   } else {
-    res.status(404).json({ message: 'Not found' });
+    res.status(404).json({ message: "Not found" });
   }
 });
 

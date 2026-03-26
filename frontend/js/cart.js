@@ -23,7 +23,13 @@ async function loadAddresses() {
         const office = data.addresses?.office;
 
         if (!home) {
-            homeDisplay.innerHTML = '<span class="text-danger">No home address set. <a href="dashboard.html">Update Profile</a></span>';
+            homeDisplay.innerHTML = `
+                <div class="no-address-alert mt-2">
+                    <span class="text-danger d-block mb-2">No home address set.</span>
+                    <a href="dashboard.html" class="btn btn-update-profile">
+                        <i class="bi bi-pencil-square me-2"></i>Update Profile
+                    </a>
+                </div>`;
             if (checkoutBtn) checkoutBtn.disabled = true;
             return;
         }

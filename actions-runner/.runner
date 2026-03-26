@@ -1,0 +1,11 @@
+﻿{
+  "agentId": 21,
+  "agentName": "JARVIS",
+  "poolId": 1,
+  "poolName": "Default",
+  "serverUrl": "https://pipelinesghubeus23.actions.githubusercontent.com/Of0P1w4zbgS9TfvcFwinRkqCRu13VoRpXpmuyPF6WXx8cshEQa/",
+  "gitHubUrl": "https://github.com/VaishaghG/PC-Confgis-Web-Page",
+  "workFolder": "_work",
+  "useV2Flow": true,
+  "serverUrlV2": "https://broker.actions.githubusercontent.com/"
+}

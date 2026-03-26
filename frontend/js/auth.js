@@ -116,7 +116,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Clear any guest selections on login to start fresh
                     localStorage.clear();
                     sessionStorage.clear();
-                    window.location.href = redirectUrl || (FRONTEND_BASE_URL + '/index.html');
+                    if (data.user) {
+                        localStorage.setItem("user", JSON.stringify(data.user));
+                    }
+                    window.location.href = data.redirect || redirectUrl || (FRONTEND_BASE_URL + '/index.html');
                 } else {
                     showAlert(data.message || 'Login failed');
                     btn.innerHTML = `Login <i class="bi bi-arrow-right ms-2"></i>`;
@@ -220,6 +223,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Clear any guest selections on signup
                     localStorage.clear();
                     sessionStorage.clear();
+                    if (data.user) {
+                        localStorage.setItem("user", JSON.stringify(data.user));
+                    }
                     window.location.href = redirectUrl || (FRONTEND_BASE_URL + '/index.html');
                 } else {
                     showAlert(data.message || 'Signup failed');

@@ -10,6 +10,15 @@ const DEFAULT_LOGIN_PATH = '/frontend/login.html';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_REGEX = /^\d{10}$/;
 
+function serializeUser(user) {
+  return {
+    id: user._id,
+    email: user.email,
+    role: user.role || 'customer',
+    username: user.username || 'User'
+  };
+}
+
 /**
  * Helper to get the correct frontend base URL.
  * It tries to get the origin from the request Referer or Host headers if possible,
@@ -41,7 +50,9 @@ router.get('/me', async (req, res) => {
     }
     res.json({ 
       loggedIn: true, 
-      name: user.username || 'User'
+      user: serializeUser(user),
+      name: user.username || 'User',
+      role: user.role || 'customer'
     });
   } catch(e) {
     res.json({ loggedIn: false });
@@ -60,7 +71,8 @@ router.get('/profile', async (req, res) => {
       email: user.email || '',
       phone: user.phone || user.phoneno || '',
       dob: user.dob || '',
-      addresses: user.addresses || { home: '', office: '' }
+      addresses: user.addresses || { home: '', office: '' },
+      role: user.role || 'customer'
     });
   } catch (e) {
     res.status(500).json({ message: 'Server error' });
@@ -94,7 +106,11 @@ router.post('/signup', async (req, res) => {
       req.session.userId = newUser._id;
       req.session.save((err) => {
         if (err) console.error("Session save error:", err);
-        return res.json({ message: 'Signup successful', user: newUser });
+        return res.json({
+          success: true,
+          message: 'Signup successful',
+          user: serializeUser(newUser)
+        });
       });
     });
   } catch (error) {
@@ -114,7 +130,13 @@ router.post('/login', (req, res, next) => {
       req.session.userId = user._id;
       req.session.save((err) => {
         if (err) console.error("Session save error:", err);
-        return res.json({ message: 'Login successful', user });
+        const redirect = user.role === 'admin' ? '/frontend/admin/dashboard.html' : '/frontend/index.html';
+        return res.json({
+          success: true,
+          message: 'Login successful',
+          user: serializeUser(user),
+          redirect
+        });
       });
     });
   })(req, res, next);
