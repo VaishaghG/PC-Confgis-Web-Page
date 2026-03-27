@@ -90,16 +90,15 @@ jobs:
         id: setup-chrome
         uses: browser-actions/setup-chrome@v1
 
-      - name: Start backend
-        run: node backend/server.js > backend.log 2>&1 &
-
-      - name: Wait for backend readiness
-        run: npx wait-on http://localhost:5000 --timeout 60000
-
-      - name: Run Selenium test
+      - name: Start backend, wait for readiness, and run Selenium
         env:
           CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
-        run: node selenium-test.js
+        run: |
+          node backend/server.js > backend.log 2>&1 &
+          BACKEND_PID=$!
+          trap 'kill $BACKEND_PID' EXIT
+          npx wait-on tcp:127.0.0.1:5000 --timeout 60000
+          node selenium-test.js
 
       - name: Print backend log on failure
         if: failure()
