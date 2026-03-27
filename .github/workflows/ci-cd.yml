@@ -65,14 +65,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-  
+      - name: Install wait tool
+        run: npm install -g wait-on
+        
       - name: Install dependencies
         run: npm install selenium-webdriver
   
       - name: Start backend
         run: |
           node backend/server.js &
-          sleep 8   # ⬅️ IMPORTANT (give server time)
+          
+      - name: Wait for backend
+        run: npx wait-on http://localhost:5000
   
       - name: Run Selenium Test
         run: node selenium-test.js
