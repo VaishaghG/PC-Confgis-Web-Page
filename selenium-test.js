@@ -8,8 +8,13 @@ const chrome = require("selenium-webdriver/chrome");
     "--disable-dev-shm-usage"
   );
 
+  const service = process.env.CHROMEDRIVER_PATH
+    ? new chrome.ServiceBuilder(process.env.CHROMEDRIVER_PATH)
+    : new chrome.ServiceBuilder();
+
   const driver = await new Builder()
     .forBrowser("chrome")
+    .setChromeService(service)
     .setChromeOptions(options)
     .build();
 
