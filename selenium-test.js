@@ -1,23 +1,30 @@
-const { Builder } = require('selenium-webdriver');
+const { Builder, By, until } = require("selenium-webdriver");
+const chrome = require("selenium-webdriver/chrome");
 
 (async function testApp() {
+  const options = new chrome.Options().addArguments(
+    "--headless",
+    "--no-sandbox",
+    "--disable-dev-shm-usage"
+  );
 
-    let driver = await new Builder()
-        .usingServer('http://localhost:4444/wd/hub') // Selenium service
-        .forBrowser('chrome')
-        .build();
+  if (process.env.CHROME_BIN) {
+    options.setChromeBinaryPath(process.env.CHROME_BIN);
+  }
 
-    try {
-        // ✅ FIXED URL (THIS IS THE KEY)
-        await driver.get('http://localhost:5000');
+  const driver = await new Builder()
+    .forBrowser("chrome")
+    .setChromeOptions(options)
+    .build();
 
-        console.log("✅ Page loaded successfully");
-
-    } catch (err) {
-        console.error("❌ Selenium failed:", err);
-        process.exit(1);
-    } finally {
-        await driver.quit();
-    }
-
+  try {
+    await driver.get("http://localhost:5000");
+    await driver.wait(until.elementLocated(By.css("body")), 10000);
+    console.log("Page loaded successfully");
+  } catch (err) {
+    console.error("Selenium failed:", err);
+    process.exitCode = 1;
+  } finally {
+    await driver.quit();
+  }
 })();

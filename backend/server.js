@@ -48,8 +48,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect(process.env.MONGO_URI  || "mongodb://localhost:27017/pc_config_db")
-  .then(async () => {
+async function startServer() {
+  try {
+    await mongoose.connect(process.env.MONGO_URI || "mongodb://localhost:27017/pc_config_db");
     console.log("MongoDB Connected");
 
     const User = require("./models/User");
@@ -67,8 +68,15 @@ mongoose.connect(process.env.MONGO_URI  || "mongodb://localhost:27017/pc_config_
       });
       console.log("Default admin created: admin@pcconfig.com / admin123");
     }
-  })
-  .catch((err) => console.log(err));
+
+    app.listen(5000, "0.0.0.0", () => {
+      console.log("Server running on port 5000");
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err);
+    process.exit(1);
+  }
+}
 
 app.use("/cpus", cpuRoutes);
 app.use("/gpus", gpuRoutes);
@@ -96,6 +104,4 @@ app.use((req, res) => {
   }
 });
 
-app.listen(5000, "0.0.0.0", () => {
-  console.log("Server running on port 5000");
-});
+startServer();

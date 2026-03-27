@@ -2,28 +2,23 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
 
 jobs:
-
-# ======================
-# FRONTEND TEST
-# ======================
   frontend-test:
     runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run frontend test
-        run: |
-          echo "Running frontend test..."
-          node frontend/test/test.js
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
 
-# ======================
-# BACKEND TEST
-# ======================
+      - name: Run frontend test
+        run: node frontend/test/test.js
+
   backend-test:
     runs-on: ubuntu-latest
 
@@ -32,6 +27,14 @@ jobs:
         image: mongo
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd "mongosh --eval \"db.adminCommand('ping')\""
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      MONGO_URI: mongodb://localhost:27017/pc_config_db
 
     steps:
       - uses: actions/checkout@v4
@@ -40,7 +43,7 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install backend
+      - name: Install backend dependencies
         working-directory: backend
         run: npm install
 
@@ -48,43 +51,63 @@ jobs:
         working-directory: backend
         run: npm test
 
-
   selenium-test:
     runs-on: ubuntu-latest
-    needs: backend-test
-  
+    needs: [frontend-test, backend-test]
+
     services:
       mongo:
         image: mongo
         ports:
           - 27017:27017
-  
+        options: >-
+          --health-cmd "mongosh --eval \"db.adminCommand('ping')\""
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     env:
       MONGO_URI: mongodb://localhost:27017/pc_config_db
-  
+
     steps:
       - uses: actions/checkout@v4
-  
+
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-  
+
+      - name: Install root dependencies
+        run: npm install
+
+      - name: Install Selenium WebDriver
+        run: npm install selenium-webdriver
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm install
+
+      - name: Install Chrome
+        id: setup-chrome
+        uses: browser-actions/setup-chrome@v1
+
       - name: Start backend
-        run: node backend/server.js &
-  
-      - name: Wait for backend
-        run: npx wait-on http://localhost:5000 --timeout 30000
-  
-      - name: Run Selenium Test
+        run: node backend/server.js > backend.log 2>&1 &
+
+      - name: Wait for backend readiness
+        run: npx wait-on http://localhost:5000 --timeout 60000
+
+      - name: Run Selenium test
+        env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
         run: node selenium-test.js
 
+      - name: Print backend log on failure
+        if: failure()
+        run: cat backend.log
 
-# ======================
-# DOCKER BUILD
-# ======================
   docker-build:
     runs-on: ubuntu-latest
-    needs: [frontend-test, backend-test]
+    needs: [frontend-test, backend-test, selenium-test]
 
     steps:
       - uses: actions/checkout@v4
@@ -92,9 +115,6 @@ jobs:
       - name: Build Docker image
         run: docker build -t pc-config-app ./backend
 
-# ======================
-# DEPLOY (Render trigger placeholder)
-# ======================
   deploy:
     runs-on: ubuntu-latest
     needs: docker-build
