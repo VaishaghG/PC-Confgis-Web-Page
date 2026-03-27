@@ -19,7 +19,7 @@ jobs:
       - name: Run frontend test
         run: |
           echo "Running frontend test..."
-          node frontend/test/test.js
+          node frontend/test.js
 
 # ======================
 # BACKEND TEST
