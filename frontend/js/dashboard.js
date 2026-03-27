@@ -245,7 +245,7 @@ async function loadBuilds() {
       ].filter(s => s.value);
 
       const specsHTML = specs.map(s =>
-        `<li><span class="spec-label">${s.label}</span><span class="spec-value">${s.value}</span></li>`
+        `<li class="build-spec-item-row"><span class="build-spec-key">${s.label}</span><span class="build-spec-text" title="${s.value}">${s.value}</span></li>`
       ).join('');
 
       const card = document.createElement('div');
@@ -255,7 +255,7 @@ async function loadBuilds() {
             <img src="${cabinetImage}" class="cabinet-img" alt="Cabinet Image">
             <div class="build-info">
                 <div class="build-number">Build #${i + 1}${build.name ? ' — ' + build.name : ''}</div>
-                <ul class="build-specs">${specsHTML || '<li><span class="spec-value">No components saved.</span></li>'}</ul>
+                <ul class="build-spec-list">${specsHTML || '<li class="build-spec-item-row"><span class="build-spec-text">No components saved.</span></li>'}</ul>
             </div>
         </div>
         <div class="build-actions">

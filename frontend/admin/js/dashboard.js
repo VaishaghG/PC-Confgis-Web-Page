@@ -11,7 +11,7 @@ async function checkAdminAuth() {
     const user = JSON.parse(localStorage.getItem('user'));
 
     if (!user || user.role !== 'admin') {
-        window.location.href = '/frontend/index.html';
+        window.location.href = '/';
         return;
     }
 
@@ -22,12 +22,12 @@ async function checkAdminAuth() {
         if (!data.loggedIn) {
             localStorage.removeItem('user');
             alert('Session expired. Please log in again.');
-            window.location.href = '/frontend/login.html';
+            window.location.href = '/login.html';
             return;
         }
 
         if (data.role !== 'admin') {
-            window.location.href = '/frontend/index.html';
+            window.location.href = '/';
             return;
         }
 

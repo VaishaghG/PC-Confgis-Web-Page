@@ -380,33 +380,41 @@
   margin-bottom: 14px;
 }
 
-.build-specs {
+.build-spec-list {
   list-style: none;
   padding: 0;
   margin: 0 0 20px;
+  display: grid;
+  gap: 10px;
 }
 
-.build-specs li {
-  display: flex;
-  gap: 8px;
-  padding: 6px 0;
+.build-spec-item-row {
+  display: grid;
+  grid-template-columns: 96px minmax(0, 1fr);
+  gap: 14px;
+  align-items: start;
+  padding: 10px 0;
   border-bottom: 1px solid rgba(255,255,255,0.04);
-  font-size: 0.9rem;
 }
 
-.build-specs li:last-child {
+.build-spec-item-row:last-child {
   border-bottom: none;
 }
 
-.spec-label {
-  color: rgba(255,255,255,0.4);
-  font-weight: 600;
-  min-width: 70px;
+.build-spec-key {
+  color: rgba(255,255,255,0.42);
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
-.spec-value {
+.build-spec-text {
   color: #fff;
-  font-weight: 500;
+  font-weight: 600;
+  font-size: 0.98rem;
+  line-height: 1.5;
+  word-break: break-word;
 }
 
 .build-actions {
@@ -950,4 +958,3 @@
   font-weight: 700;
   color: #f6c66a;
 }
-

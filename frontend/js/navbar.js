@@ -17,12 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (accountBtn) {
-                accountBtn.href = data.loggedIn ? 'dashboard.html' : 'login.html';
+                accountBtn.href = data.loggedIn ? '/dashboard.html' : '/login.html';
             }
 
             syncAdminButton(data.user, navIcons);
 
-            const cartBtn = document.querySelector('a[href="cart.html"]');
+            const cartBtn = document.querySelector('a[href="/cart.html"], a[href="cart.html"]');
             if (cartBtn && !data.loggedIn) {
                 cartBtn.addEventListener('click', (event) => {
                     event.preventDefault();
@@ -40,7 +40,7 @@ function syncAdminButton(user, navIcons) {
         const adminBtn = document.createElement('a');
         adminBtn.id = 'nav-admin-btn';
         adminBtn.className = 'glass-chip admin-btn';
-        adminBtn.href = 'admin/dashboard.html';
+        adminBtn.href = '/admin/dashboard.html';
         adminBtn.innerText = 'Admin Dashboard';
         navIcons.prepend(adminBtn);
         return;

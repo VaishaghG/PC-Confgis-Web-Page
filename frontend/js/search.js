@@ -91,7 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 item.addEventListener('click', () => {
                     const productType = product.type || 'unknown';
-                    window.location.href = `product.html?id=${product.id}&type=${productType}`;
+                    window.location.href = `/product.html?id=${product.id}&type=${productType}`;
                 });
                 
                 searchResults.appendChild(item);

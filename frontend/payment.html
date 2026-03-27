@@ -7,11 +7,11 @@
     <meta name="description" content="Complete your PC Configurator purchase securely with UPI or Card.">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/auth.css">
-    <link rel="stylesheet" href="css/notifications.css">
-    <link rel="stylesheet" href="css/search.css">
-    <link rel="stylesheet" href="css/payment.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/notifications.css">
+    <link rel="stylesheet" href="/css/search.css">
+    <link rel="stylesheet" href="/css/payment.css">
 </head>
 <body>
 
@@ -19,12 +19,12 @@
 <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid position-relative nav-layout">
         <div class="nav-left-col">
-            <a class="navbar-brand glass-chip logo-chip" href="index.html">
-                <img src="images/logo.png" class="logo" alt="PC Configurator Logo">
+            <a class="navbar-brand glass-chip logo-chip" href="/">
+                <img src="/images/logo.png" class="logo" alt="PC Configurator Logo">
             </a>
         </div>
         <div class="nav-icons glass-chip nav-icons-chip d-flex align-items-center">
-            <a class="nav-back-btn glass-chip me-2" href="cart.html" aria-label="Back to cart">
+            <a class="nav-back-btn glass-chip me-2" href="/cart.html" aria-label="Back to cart">
                 <i class="bi bi-arrow-left"></i>
             </a>
             <span id="navUser" class="nav-user-text text-white fw-bold"></span>
@@ -225,7 +225,7 @@
     </div>
 </main>
 
-<script src="js/config.js"></script>
+<script src="/js/config.js"></script>
 <script>
     // Auth guard — redirect if not logged in
     (async function () {
@@ -233,16 +233,16 @@
             const res = await fetch(`${API_BASE_URL}/api/auth/me`, { credentials: 'include' });
             const data = await res.json();
             if (!data.loggedIn) {
-                window.location.replace(`login.html?redirect=${encodeURIComponent(window.location.pathname)}&error=unauth`);
+                window.location.replace(`/login.html?redirect=${encodeURIComponent(window.location.pathname)}&error=unauth`);
             }
         } catch (err) {
             console.error('Auth check failed', err);
         }
     })();
 </script>
-<script src="js/notifications.js"></script>
-<script src="js/payment.js"></script>
-<script src="js/navbar.js"></script>
-<script src="js/search.js"></script>
+<script src="/js/notifications.js"></script>
+<script src="/js/payment.js"></script>
+<script src="/js/navbar.js"></script>
+<script src="/js/search.js"></script>
 </body>
 </html>

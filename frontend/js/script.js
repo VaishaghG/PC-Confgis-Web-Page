@@ -77,7 +77,7 @@ container.innerHTML += `
 
 <p class="product-price">$${product.price || "N/A"}</p>
 
-<a href="product.html?id=${product._id}&type=${productType}" class="btn btn-dark btn-sm">
+<a href="/product.html?id=${product._id}&type=${productType}" class="btn btn-dark btn-sm">
 View
 </a>
 <button class="btn btn-outline-light btn-sm btn-select ms-2" onclick="selectComponent('${productType}', '${name}', '${product._id}', this)">
@@ -286,7 +286,7 @@ document.getElementById('btn-save-build')?.addEventListener('click', async () =>
             setTimeout(() => {
                 showNotification("Build saved successfully!", 'success', {
                     actionLabel: "Go to Builds",
-                    actionUrl: "dashboard.html#builds"
+                    actionUrl: "/dashboard.html#builds"
                 });
                 
                 // CRITICAL: Reset the build state
