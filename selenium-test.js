@@ -4,7 +4,11 @@ const chrome = require('selenium-webdriver/chrome');
 (async function testApp() {
 
     let options = new chrome.Options();
-    options.addArguments('--headless', '--no-sandbox', '--disable-dev-shm-usage');
+    options.addArguments(
+        '--headless=new',
+        '--no-sandbox',
+        '--disable-dev-shm-usage'
+    );
 
     let driver = await new Builder()
         .forBrowser('chrome')
