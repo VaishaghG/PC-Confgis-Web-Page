@@ -50,36 +50,33 @@ jobs:
 
 
   selenium-test:
-      runs-on: ubuntu-latest
-      needs: backend-test
-
-      steps:
-        - uses: actions/checkout@v4
-
-        - uses: actions/setup-node@v4
-          with:
-            node-version: 18
-
-    # ✅ Install Chrome
-        - name: Install Chrome
-          run: |
-            sudo apt update
-            sudo apt install -y google-chrome-stable
-
-    # ✅ Install dependencies
-        - name: Install dependencies
-          run: |
-            npm install selenium-webdriver
-
-    # ✅ Start backend
-        - name: Start backend
-          run: |
-            node backend/server.js &
-            sleep 5
-
-    # ✅ Run Selenium
-        - name: Run Selenium Test
-          run: node selenium-test.js
+    runs-on: ubuntu-latest
+    needs: backend-test
+  
+    steps:
+      - uses: actions/checkout@v4
+  
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+  
+      # ✅ Install Chrome properly
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+  
+      # ✅ Install dependencies
+      - name: Install dependencies
+        run: npm install selenium-webdriver
+  
+      # ✅ Start backend
+      - name: Start backend
+        run: |
+          node backend/server.js &
+          sleep 5
+  
+      # ✅ Run Selenium test
+      - name: Run Selenium Test
+        run: node selenium-test.js
 
 
 # ======================
