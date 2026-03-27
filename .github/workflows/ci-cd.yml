@@ -49,7 +49,7 @@ jobs:
         run: npm test
 
 
-   selenium-test:
+  selenium-test:
     runs-on: ubuntu-latest
     needs: backend-test
 
