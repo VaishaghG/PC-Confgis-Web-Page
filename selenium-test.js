@@ -8,10 +8,6 @@ const chrome = require("selenium-webdriver/chrome");
     "--disable-dev-shm-usage"
   );
 
-  if (process.env.CHROME_BIN) {
-    options.setChromeBinaryPath(process.env.CHROME_BIN);
-  }
-
   const driver = await new Builder()
     .forBrowser("chrome")
     .setChromeOptions(options)
