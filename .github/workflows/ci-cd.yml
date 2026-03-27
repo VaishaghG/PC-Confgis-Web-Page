@@ -96,6 +96,7 @@ jobs:
 
       - name: Start backend, wait for readiness, and run Selenium
         env:
+          CHROME_BIN: ${{ steps.setup-chrome.outputs.chrome-path }}
           CHROMEDRIVER_PATH: ${{ steps.setup-chrome.outputs.chromedriver-path }}
         run: |
           node backend/server.js > backend.log 2>&1 &
