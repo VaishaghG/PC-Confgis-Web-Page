@@ -3,6 +3,7 @@ const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
+const APP_BASE_URL = process.env.APP_BASE_URL || 'http://localhost:5000';
 
 module.exports = function() {
   // Serialize user ID to session
@@ -51,7 +52,7 @@ module.exports = function() {
   passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID || 'PLACEHOLDER_CLIENT_ID',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'PLACEHOLDER_CLIENT_SECRET',
-      callbackURL: 'http://127.0.0.1:5000/api/auth/google/callback'
+      callbackURL: process.env.GOOGLE_CALLBACK_URL || `${APP_BASE_URL}/api/auth/google/callback`
     },
     async (accessToken, refreshToken, profile, done) => {
       try {

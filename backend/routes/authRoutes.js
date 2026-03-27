@@ -4,9 +4,9 @@ const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 
 const router = express.Router();
-const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || 'http://127.0.0.1:5502'; // Default to 5502 or detect dynamically
-const DEFAULT_REDIRECT_PATH = '/frontend/index.html';
-const DEFAULT_LOGIN_PATH = '/frontend/login.html';
+const FRONTEND_BASE_URL = process.env.FRONTEND_BASE_URL || '';
+const DEFAULT_REDIRECT_PATH = '/';
+const DEFAULT_LOGIN_PATH = '/login.html';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const PHONE_REGEX = /^\d{10}$/;
 
@@ -31,6 +31,10 @@ function getFrontendBase(req) {
       const url = new URL(req.headers.referer);
       return url.origin;
     } catch (e) {}
+  }
+  if (req.headers.host) {
+    const proto = req.headers['x-forwarded-proto'] || req.protocol || 'http';
+    return `${proto}://${req.headers.host}`;
   }
   return FRONTEND_BASE_URL;
 }
@@ -130,7 +134,7 @@ router.post('/login', (req, res, next) => {
       req.session.userId = user._id;
       req.session.save((err) => {
         if (err) console.error("Session save error:", err);
-        const redirect = user.role === 'admin' ? '/frontend/admin/dashboard.html' : '/frontend/index.html';
+        const redirect = user.role === 'admin' ? '/admin/dashboard.html' : '/';
         return res.json({
           success: true,
           message: 'Login successful',

@@ -21,6 +21,7 @@ const productRoutes = require("./routes/productRoutes");
 const apiUserRoutes = require("./routes/apiUserRoutes");
 
 const app = express();
+const frontendDir = path.join(__dirname, "../frontend");
 const SESSION_SECRET = process.env.SESSION_SECRET || "pcconfig-dev-session-secret";
 
 app.use(cors({
@@ -31,7 +32,12 @@ app.use(cors({
 
 app.use(express.json());
 
-app.use("/images", express.static(path.join(__dirname, "../frontend/images")));
+app.use("/css", express.static(path.join(frontendDir, "css")));
+app.use("/js", express.static(path.join(frontendDir, "js")));
+app.use("/images", express.static(path.join(frontendDir, "images")));
+app.use("/admin", express.static(path.join(frontendDir, "admin")));
+app.use("/public", express.static(path.join(frontendDir, "public")));
+app.use(express.static(frontendDir));
 
 app.use(session({
   secret: SESSION_SECRET,
@@ -69,13 +75,13 @@ async function startServer() {
       console.log("Default admin created: admin@pcconfig.com / admin123");
     }
 
-    app.listen(5000, "0.0.0.0", () => {
-      console.log("Server running on port 5000");
-    });
   } catch (err) {
-    console.error("Failed to start server:", err);
-    process.exit(1);
+    console.error("MongoDB connection failed. Starting server without database:", err.message);
   }
+
+  app.listen(5000, "0.0.0.0", () => {
+    console.log("Server running on port 5000");
+  });
 }
 
 app.use("/cpus", cpuRoutes);
@@ -94,11 +100,13 @@ app.use("/api/products", productRoutes);
 app.use("/api/user", apiUserRoutes);
 app.use("/api/admin", require("./routes/adminRoutes"));
 
-app.use(express.static(path.join(__dirname, "..")));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(frontendDir, "index.html"));
+});
 
 app.use((req, res) => {
   if (!req.path.startsWith("/api") && !req.path.match(/\.[a-z]{2,4}$/i)) {
-    res.sendFile(path.join(__dirname, "../frontend/index.html"));
+    res.sendFile(path.join(frontendDir, "index.html"));
   } else {
     res.status(404).json({ message: "Not found" });
   }
