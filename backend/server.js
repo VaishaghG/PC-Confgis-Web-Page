@@ -48,7 +48,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI  || "mongodb://localhost:27017/pc_config_db")
   .then(async () => {
     console.log("MongoDB Connected");
 
