@@ -54,10 +54,13 @@ jobs:
     needs: backend-test
   
     services:
-      selenium:
-        image: selenium/standalone-chrome
+      mongo:
+        image: mongo
         ports:
-          - 4444:4444
+          - 27017:27017
+  
+    env:
+      MONGO_URI: mongodb://localhost:27017/pc_config_db
   
     steps:
       - uses: actions/checkout@v4
@@ -65,18 +68,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 18
-      - name: Install wait tool
-        run: npm install -g wait-on
-        
+  
       - name: Install dependencies
-        run: npm install selenium-webdriver
+        run: |
+          npm install
+          npm install selenium-webdriver
+          npm install -g wait-on
   
       - name: Start backend
-        run: |
-          node backend/server.js &
-          
+        run: node backend/server.js &
+  
       - name: Wait for backend
-        run: npx wait-on http://localhost:5000
+        run: npx wait-on http://localhost:5000 --timeout 30000
   
       - name: Run Selenium Test
         run: node selenium-test.js
