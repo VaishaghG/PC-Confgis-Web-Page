@@ -72,7 +72,7 @@ jobs:
       - name: Start backend
         run: |
           node backend/server.js &
-          sleep 5
+          sleep 8   # ⬅️ IMPORTANT (give server time)
   
       - name: Run Selenium Test
         run: node selenium-test.js
