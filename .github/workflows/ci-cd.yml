@@ -50,27 +50,36 @@ jobs:
 
 
   selenium-test:
-    runs-on: ubuntu-latest
-    needs: backend-test
+      runs-on: ubuntu-latest
+      needs: backend-test
 
-    steps:
-      - uses: actions/checkout@v4
+      steps:
+        - uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 18
+        - uses: actions/setup-node@v4
+          with:
+            node-version: 18
 
-      - name: Install dependencies
-        run: |
-          npm install selenium-webdriver chromedriver
+    # ✅ Install Chrome
+        - name: Install Chrome
+          run: |
+            sudo apt update
+            sudo apt install -y google-chrome-stable
 
-      - name: Start backend
-        run: |
-          node backend/server.js &
-          sleep 5
+    # ✅ Install dependencies
+        - name: Install dependencies
+          run: |
+            npm install selenium-webdriver
 
-      - name: Run Selenium Test
-        run: node selenium-test.js
+    # ✅ Start backend
+        - name: Start backend
+          run: |
+            node backend/server.js &
+            sleep 5
+
+    # ✅ Run Selenium
+        - name: Run Selenium Test
+          run: node selenium-test.js
 
 
 # ======================
