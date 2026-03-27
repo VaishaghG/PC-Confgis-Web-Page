@@ -5,7 +5,7 @@ const cors = require("cors");
 const session = require("express-session");
 const passport = require("passport");
 const path = require("path");
-require("./passport-config")(passport);
+require("./passport-config")();
 
 const cpuRoutes = require("./routes/cpuRoutes");
 const gpuRoutes = require("./routes/gpuRoutes");

@@ -4,10 +4,7 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 const bcrypt = require('bcryptjs');
 const User = require('./models/User');
 
-module.exports = function(app) {
-  app.use(passport.initialize());
-  app.use(passport.session());
-
+module.exports = function() {
   // Serialize user ID to session
   passport.serializeUser((user, done) => {
     done(null, user.id);
