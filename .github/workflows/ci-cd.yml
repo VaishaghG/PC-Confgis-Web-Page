@@ -69,12 +69,6 @@ jobs:
         with:
           node-version: 18
   
-      - name: Install dependencies
-        run: |
-          npm install
-          npm install selenium-webdriver
-          npm install -g wait-on
-  
       - name: Start backend
         run: node backend/server.js &
   
