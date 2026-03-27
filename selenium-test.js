@@ -1,22 +1,14 @@
 const { Builder } = require('selenium-webdriver');
-const chrome = require('selenium-webdriver/chrome');
 
 (async function testApp() {
 
-    let options = new chrome.Options();
-    options.addArguments(
-        '--headless=new',
-        '--no-sandbox',
-        '--disable-dev-shm-usage'
-    );
-
     let driver = await new Builder()
+        .usingServer('http://localhost:4444/wd/hub') // 👈 IMPORTANT
         .forBrowser('chrome')
-        .setChromeOptions(options)
         .build();
 
     try {
-        await driver.get('http://localhost:5000');
+        await driver.get('http://host.docker.internal:5000'); // 👈 IMPORTANT
         console.log("✅ Page loaded successfully");
     } catch (err) {
         console.error("❌ Selenium failed:", err);
