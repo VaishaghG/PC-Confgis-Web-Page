@@ -332,3 +332,88 @@ pointer-events: none;
 .product-page .logo-chip {
 transition: transform 0.4s ease;
 }
+
+@media (max-width: 768px) {
+.product-main {
+padding: 88px 16px 28px;
+}
+
+.product-layout {
+grid-template-columns: 1fr;
+gap: 16px;
+max-width: 100%;
+}
+
+.glass-card {
+border-radius: 20px;
+}
+
+.product-image-panel {
+position: static;
+top: auto;
+padding: 18px;
+gap: 12px;
+}
+
+.product-image-wrap {
+border-radius: 16px;
+}
+
+.product-img {
+max-height: 240px;
+padding: 10px;
+}
+
+.product-title {
+font-size: 1.35rem;
+line-height: 1.2;
+}
+
+.product-rating-row,
+.product-price-row,
+.product-actions {
+gap: 10px;
+}
+
+.product-price {
+font-size: 1.6rem;
+}
+
+.product-specs {
+padding: 18px 16px;
+overflow-x: hidden;
+}
+
+.specs-table,
+.specs-table tbody,
+.specs-table tr,
+.specs-table td {
+display: block;
+width: 100%;
+}
+
+.specs-table tr {
+padding: 10px 0;
+}
+
+.specs-table td {
+padding: 4px 0;
+}
+
+.spec-key {
+width: auto;
+padding-right: 0;
+font-size: 0.78rem;
+}
+
+.product-actions {
+flex-direction: column;
+}
+
+.btn-action {
+width: 100%;
+min-width: 100%;
+padding: 12px 16px;
+font-size: 0.95rem;
+}
+}

@@ -4,7 +4,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "echo \"Backend test passed\""
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +24,7 @@
     "passport-local": "^1.0.0"
   },
   "devDependencies": {
+    "jest": "^30.0.5",
     "nodemon": "^3.1.14"
   }
 }

@@ -472,3 +472,64 @@
         font-size: 1.6rem;
     }
 }
+
+@media (max-width: 768px) {
+    .payment-main {
+        padding: 88px 16px 28px;
+        overflow-x: hidden;
+    }
+
+    .payment-header {
+        margin-bottom: 20px;
+    }
+
+    .payment-header h2 {
+        font-size: 1.45rem;
+    }
+
+    .payment-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .payment-methods,
+    .order-summary {
+        padding: 18px 16px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .order-summary {
+        position: static;
+        top: auto;
+    }
+
+    .method-tabs {
+        flex-direction: column;
+        border-radius: 16px;
+    }
+
+    .method-tab {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .form-input,
+    .pay-btn {
+        min-height: 46px;
+    }
+
+    .summary-total-row {
+        padding: 14px;
+    }
+
+    .summary-total-row .total-amount {
+        font-size: 1.25rem;
+    }
+}

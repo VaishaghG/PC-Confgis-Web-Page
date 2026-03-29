@@ -584,6 +584,148 @@
   }
 }
 
+@media (max-width: 768px) {
+  .dashboard-main {
+    padding: 88px 16px 28px;
+    gap: 16px;
+    overflow-x: hidden;
+  }
+
+  .dashboard-sidebar,
+  .password-form,
+  .build-card,
+  .order-card,
+  .cart-build,
+  .order-build-card {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+
+  .dashboard-sidebar {
+    padding: 18px 14px;
+    border-radius: 18px;
+  }
+
+  .sidebar-profile {
+    padding-bottom: 16px;
+    margin-bottom: 14px;
+  }
+
+  .sidebar-nav {
+    gap: 8px;
+  }
+
+  .sidebar-link {
+    min-height: 44px;
+    padding: 10px 12px;
+    font-size: 0.92rem;
+  }
+
+  .section-header,
+  .build-header,
+  .order-card-header,
+  .profile-avatar-row,
+  .edit-actions,
+  .build-actions,
+  .build-group-actions,
+  .cart-item-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .section-header {
+    gap: 12px;
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+  }
+
+  .section-title,
+  .profile-full-name,
+  .build-title,
+  .build-title-header {
+    font-size: 1.1rem;
+  }
+
+  .profile-avatar-row {
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .profile-grid,
+  .edit-grid,
+  .build-specs,
+  .build-specs-list {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-field,
+  .password-form,
+  .build-card,
+  .order-card {
+    padding: 16px;
+  }
+
+  .build-spec-item-row {
+    grid-template-columns: 1fr;
+    gap: 4px;
+    padding: 8px 0;
+  }
+
+  .build-spec-key {
+    font-size: 0.7rem;
+  }
+
+  .build-actions > *,
+  .edit-actions > *,
+  .build-group-actions > *,
+  .section-header > .btn-edit-profile,
+  .section-header > .btn-new-build {
+    width: 100%;
+  }
+
+  .order-card-header {
+    gap: 8px;
+  }
+
+  .order-total,
+  .build-price-tag {
+    font-size: 1.1rem;
+  }
+
+  .order-build-card,
+  .cart-build,
+  .cart-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .cabinet-img,
+  .order-build-card .cabinet-img,
+  .cart-build .cabinet-img {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto;
+  }
+
+  .cart-item-img {
+    width: 104px;
+    height: 104px;
+    margin: 0 auto;
+  }
+
+  .build-spec-name,
+  .spec-val {
+    white-space: normal;
+  }
+
+  .empty-state {
+    padding: 40px 16px;
+  }
+}
+
 .build-header {
     display: flex;
     gap: 15px;

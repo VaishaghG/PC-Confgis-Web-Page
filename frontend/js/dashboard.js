@@ -386,7 +386,7 @@ async function loadOrders() {
               </div>
             
               <div class="build-price-tag">
-                $${buildPrice.toFixed(2)}
+                ${formatUsdAsInr(buildPrice)}
               </div>
             </div>
           `;
@@ -419,7 +419,7 @@ async function loadOrders() {
                   </div>
                 </div>
                 <div class="build-price-tag">
-                  $${(parseFloat(item.price) || 0).toFixed(2)}
+                  ${formatUsdAsInr(parseFloat(item.price) || 0)}
                 </div>
               </div>`;
           } else {
@@ -436,7 +436,7 @@ async function loadOrders() {
                           <span class="qty-value text-muted">Qty: ${item.quantity || 1}</span>
                       </div>
                   </div>
-                  <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
+                  <div class="cart-item-price">${formatUsdAsInr(itemTotal)}</div>
               </div>`;
           }
         }).join('');
@@ -450,7 +450,7 @@ async function loadOrders() {
             <span class="order-id"><i class="bi bi-bag-check me-1"></i>${order.orderId || ('ORD-' + order._id.slice(-8).toUpperCase())}</span>
             <span class="order-date"><i class="bi bi-calendar3 me-1"></i>${dateStr}</span>
           </div>
-          <div class="order-total">$${parseFloat(order.totalAmount || 0).toFixed(2)}</div>
+          <div class="order-total">${formatUsdAsInr(parseFloat(order.totalAmount || 0))}</div>
         </div>
         <div class="order-status-badge status-${(order.status || 'paid').toLowerCase()}">${(order.status || 'Paid').toUpperCase()}</div>
         ${buildsHTML ? `<div class="order-builds-list">${buildsHTML}</div>` : ''}

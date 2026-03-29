@@ -75,7 +75,7 @@ container.innerHTML += `
 
 <h6>${name}</h6>
 
-<p class="product-price">$${product.price || "N/A"}</p>
+<p class="product-price">${product.price != null ? formatUsdAsInr(product.price) : "N/A"}</p>
 
 <a href="/product.html?id=${product._id}&type=${productType}" class="btn btn-dark btn-sm">
 View
@@ -544,22 +544,23 @@ const imgRatio = img.width / img.height;
 
 let drawWidth, drawHeight, offsetX, offsetY;
 
-if (canvasRatio > imgRatio) {
-// Canvas is wider than image (fit height)
-drawHeight = canvas.height;
-drawWidth = img.width * (drawHeight / img.height);
-offsetX = (canvas.width - drawWidth) / 2;
-offsetY = 0;
-} else {
-// Canvas is taller than image (fit width)
-drawWidth = canvas.width;
-drawHeight = img.height * (drawWidth / img.width);
-offsetX = 0;
-offsetY = (canvas.height - drawHeight) / 2;
-}
+    // "Cover" logic: ensure the image covers the entire canvas
+    if (canvasRatio > imgRatio) {
+        // Canvas is wider than image (fit width, crop height)
+        drawWidth = canvas.width;
+        drawHeight = img.height * (drawWidth / img.width);
+        offsetX = 0;
+        offsetY = (canvas.height - drawHeight) / 2;
+    } else {
+        // Canvas is taller than image (fit height, crop width)
+        drawHeight = canvas.height;
+        drawWidth = img.width * (drawHeight / img.height);
+        offsetX = (canvas.width - drawWidth) / 2;
+        offsetY = 0;
+    }
 
-ctx.clearRect(0, 0, canvas.width, canvas.height);
-ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 }
 
 function updateTextOverlays(progress) {
@@ -665,4 +666,44 @@ window.addEventListener('pageshow', (event) => {
         // Page restored from cache (back button)
         loadStoredSelections();
     }
+});
+
+function initScrollArrows() {
+    document.querySelectorAll('.scroll-wrapper').forEach(wrapper => {
+        const scroll = wrapper.querySelector('.product-scroll');
+        const leftBtn = wrapper.querySelector('.left-arrow');
+        const rightBtn = wrapper.querySelector('.right-arrow');
+
+        if (!scroll || !leftBtn || !rightBtn) return;
+
+        leftBtn.addEventListener('click', () => {
+            scroll.scrollBy({ left: -400, behavior: 'smooth' });
+        });
+
+        rightBtn.addEventListener('click', () => {
+            scroll.scrollBy({ left: 400, behavior: 'smooth' });
+        });
+        
+        // Optional: Hide/Show arrows based on scroll position
+        const updateArrows = () => {
+            const isAtStart = scroll.scrollLeft <= 5;
+            const isAtEnd = scroll.scrollLeft + scroll.clientWidth >= scroll.scrollWidth - 5;
+            
+            leftBtn.style.opacity = isAtStart ? '0' : '1';
+            leftBtn.style.pointerEvents = isAtStart ? 'none' : 'auto';
+            
+            rightBtn.style.opacity = isAtEnd ? '0' : '1';
+            rightBtn.style.pointerEvents = isAtEnd ? 'none' : 'auto';
+        };
+        
+        scroll.addEventListener('scroll', updateArrows);
+        window.addEventListener('resize', updateArrows);
+        
+        // Initial check
+        setTimeout(updateArrows, 500); // Wait for content to load
+    });
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    initScrollArrows();
 });

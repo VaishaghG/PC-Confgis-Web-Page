@@ -127,7 +127,7 @@ function formatCategory(type) {
 }
 
 function formatCurrency(value) {
-    return `$${Math.round(value).toLocaleString()}`;
+    return formatUsdAsInr(value);
 }
 
 function escapeAnalytics(value) {

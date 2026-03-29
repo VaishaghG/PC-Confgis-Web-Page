@@ -124,4 +124,15 @@
     .nav-icons-chip.search-active .search-input {
         width: 160px;
     }
+
+    .nav-icons-chip {
+        max-width: calc(100vw - 110px);
+        overflow: visible;
+    }
+
+    .search-results-dropdown {
+        left: 0;
+        right: 0;
+        top: calc(100% + 10px);
+    }
 }

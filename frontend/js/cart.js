@@ -173,7 +173,7 @@ function renderCart(individuals, builds) {
                             </button>
                         </div>
                     </div>
-                    <div class="cart-item-price">$${itemTotal.toFixed(2)}</div>
+                    <div class="cart-item-price">${formatUsdAsInr(itemTotal)}</div>
                 </div>
             `;
         });
@@ -207,7 +207,7 @@ function renderCart(individuals, builds) {
                     <div class="build-details">
                         <div class="build-header">
                             <h3 class="build-title">${build.name || 'Custom PC Build'}</h3>
-                            <div class="cart-item-price">$${buildPrice.toFixed(2)}</div>
+                            <div class="cart-item-price">${formatUsdAsInr(buildPrice)}</div>
                         </div>
                         <div class="build-specs-list">
                             ${specsHtml || '<div class="text-muted small">Please complete the build before adding to cart.</div>'}
@@ -234,8 +234,8 @@ function updateSummary(subtotal, totalItems) {
     const subtotalEl = document.getElementById('summary-subtotal');
     const totalEl = document.getElementById('summary-total');
     
-    if (subtotalEl) subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
-    if (totalEl) totalEl.textContent = `$${subtotal.toFixed(2)}`;
+    if (subtotalEl) subtotalEl.textContent = formatUsdAsInr(subtotal);
+    if (totalEl) totalEl.textContent = formatUsdAsInr(subtotal);
 
     // Store in localStorage as fallback for payment page
     localStorage.setItem('paymentTotal', subtotal.toFixed(2));

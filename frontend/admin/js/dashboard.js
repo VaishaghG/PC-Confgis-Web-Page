@@ -391,7 +391,7 @@ function getProductName(product) {
 }
 
 function getProductMeta(product) {
-    const price = product.price ? `$${product.price}` : 'No price set';
+    const price = product.price ? formatUsdAsInr(product.price) : 'No price set';
     const rating = product.rating ? `Rating ${product.rating}` : 'No rating';
     return `${rating} - ${price}`;
 }
