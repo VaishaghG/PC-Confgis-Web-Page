@@ -1,23 +1,10 @@
-version: "3.8"
-
 services:
-
   backend:
     build: ./backend
     ports:
       - "5000:5000"
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/pc_config_db
-    depends_on:
-      - mongo
-
-  mongo:
-    image: mongo
-    container_name: pc-mongo
-    ports:
-      - "27017:27017"
     volumes:
-      - mongo-data:/data/db
-
-volumes:
-  mongo-data:
+      - ./frontend:/frontend
+      - ./backend:/app
+    extra_hosts:
+      - "host.docker.internal:host-gateway"

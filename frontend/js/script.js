@@ -385,21 +385,21 @@ sectionLinks.forEach((link) => {
     const href = link.getAttribute("href");
     const targetId = href.startsWith("index.html#") ? href.replace("index.html#", "#") : href;
 
-if (!targetId || targetId === "#") {
-return;
-}
+    if (!targetId || !targetId.startsWith("#") || targetId === "#") {
+        return;
+    }
 
-const section = document.querySelector(targetId);
-
-if (!section) {
-return;
-}
-
-const sectionTop = section.getBoundingClientRect().top;
-
-if (sectionTop - offset <= 0) {
-currentSectionId = section.id;
-}
+    try {
+        const section = document.querySelector(targetId);
+        if (section) {
+            const sectionTop = section.getBoundingClientRect().top;
+            if (sectionTop - offset <= 0) {
+                currentSectionId = section.id;
+            }
+        }
+    } catch (e) {
+        // Silently skip if querySelector fails for any reason
+    }
 });
 
 setActiveNavLink(currentSectionId);
